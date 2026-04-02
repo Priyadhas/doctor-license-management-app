@@ -9,7 +9,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- ❗ CHECK IF DOCTOR EXISTS
+    -- CHECK IF DOCTOR EXISTS
     IF NOT EXISTS (
         SELECT 1 FROM Doctors 
         WHERE Id = @Id AND IsDeleted = 0
