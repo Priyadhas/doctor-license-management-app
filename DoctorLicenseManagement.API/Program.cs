@@ -4,6 +4,7 @@ using DoctorLicenseManagement.API.Middleware;
 using DoctorLicenseManagement.API.Database;
 using DoctorLicenseManagement.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,19 +15,27 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
     options.InvalidModelStateResponseFactory = context =>
     {
-        var errors = context.ModelState
-            .Where(x => x.Value.Errors.Count > 0)
-            .SelectMany(x => x.Value.Errors)
-            .Select(x => x.ErrorMessage)
+        // Extract all validation errors safely
+        var errorList = context.ModelState
+            .Where(entry => entry.Value?.Errors?.Count > 0)
+            .SelectMany(entry => entry.Value!.Errors.Select(error => new
+            {
+                Field = entry.Key,
+                Message = string.IsNullOrWhiteSpace(error.ErrorMessage)
+                    ? "Invalid input format"
+                    : error.ErrorMessage
+            }))
             .ToList();
 
-        var response = new
+        // Optional: first error message (for simple UI)
+        var firstErrorMessage = errorList.FirstOrDefault()?.Message ?? "Invalid request";
+
+        return new BadRequestObjectResult(new
         {
             success = false,
-            message = errors.FirstOrDefault() ?? "Invalid request"
-        };
-
-        return new BadRequestObjectResult(response);
+            message = firstErrorMessage,
+            errors = errorList 
+        });
     };
 });
 
@@ -36,15 +45,15 @@ builder.Services.AddScoped<IDbConnectionFactory, DbConnectionFactory>();
 
 var app = builder.Build();
 
-// Database Initializer
-var initializer = new DatabaseInitializer(builder.Configuration);
-await initializer.InitializeAsync();
-
 // Middleware
 app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Database Initializer
+var initializer = new DatabaseInitializer(builder.Configuration);
+await initializer.InitializeAsync();
 
 app.Run();

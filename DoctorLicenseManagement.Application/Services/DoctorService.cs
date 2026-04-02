@@ -18,33 +18,44 @@ public class DoctorService : IDoctorService
     // GET ALL (SEARCH + FILTER + PAGINATION)
     // ============================
     public async Task<IReadOnlyList<DoctorDto>> GetAllDoctorsAsync(
-        string? search,
-        string? status,
-        int pageNumber,
-        int pageSize)
-    {
-        using var connection = _factory.CreateConnection();
+    string? search,
+    string? status,
+    int pageNumber,
+    int pageSize)
+{
+    using var connection = _factory.CreateConnection();
 
-        search = string.IsNullOrWhiteSpace(search) ? null : search.Trim();
-        status = string.IsNullOrWhiteSpace(status) ? null : status.Trim();
+    // Normalize inputs
+    search = string.IsNullOrWhiteSpace(search) ? null : search.Trim();
+    status = string.IsNullOrWhiteSpace(status) ? null : status.Trim();
 
-        if (pageNumber <= 0) pageNumber = 1;
-        if (pageSize <= 0 || pageSize > 100) pageSize = 10;
+    // Safety defaults
+    if (pageNumber <= 0) pageNumber = 1;
+    if (pageSize <= 0 || pageSize > 100) pageSize = 10;
 
-        var result = await connection.QueryAsync<DoctorDto>(
-            "GetAllDoctors",
-            new
-            {
-                Search = search,
-                Status = status,
-                PageNumber = pageNumber,
-                PageSize = pageSize
-            },
-            commandType: CommandType.StoredProcedure
-        );
+    // 🚨 ONLY PASS PARAMETERS THAT SQL SUPPORTS
+    var result = await connection.QueryAsync<DoctorDto>(
+        "GetAllDoctors",
+        new
+        {
+            Search = search,
+            Status = status
+        },
+        commandType: CommandType.StoredProcedure
+    );
 
-        return result.ToList();
-    }
+    var data = result.ToList();
+
+    // ============================
+    // APPLY PAGINATION IN CODE
+    // ============================
+    var paginatedData = data
+        .Skip((pageNumber - 1) * pageSize)
+        .Take(pageSize)
+        .ToList();
+
+    return paginatedData;
+}
 
     // ============================
     // GET BY ID
@@ -92,8 +103,7 @@ public class DoctorService : IDoctorService
             throw new ArgumentException("License Expiry Date is required");
 
         if (dto.LicenseExpiryDate < DateTime.Today)
-            throw new ArgumentException("License expiry date cannot be in the past");
-             
+            throw new ArgumentException("License expiry date cannot be in the past"); 
         var parameters = new
         {
             dto.FullName,
