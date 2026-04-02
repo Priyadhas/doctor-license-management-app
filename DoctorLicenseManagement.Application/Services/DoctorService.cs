@@ -1,41 +1,45 @@
 using DoctorLicenseManagement.Application.DTOs;
 using DoctorLicenseManagement.Application.Interfaces;
 using System.Data;
-using Microsoft.Data.SqlClient;
 using Dapper;
-using Microsoft.Extensions.Configuration;
 
 namespace DoctorLicenseManagement.Application.Services;
 
 public class DoctorService : IDoctorService
 {
-    private readonly IConfiguration _configuration;
+    private readonly IDbConnectionFactory _factory;
 
-    public DoctorService(IConfiguration configuration)
+    public DoctorService(IDbConnectionFactory factory)
     {
-        _configuration = configuration;
-    }
-
-    private IDbConnection CreateConnection()
-    {
-        return new SqlConnection(
-            _configuration.GetConnectionString("DefaultConnection")
-        );
+        _factory = factory;
     }
 
     // ============================
-    // 🔍 GET ALL (SEARCH + FILTER)
+    // GET ALL (SEARCH + FILTER + PAGINATION)
     // ============================
-    public async Task<IReadOnlyList<DoctorDto>> GetAllDoctorsAsync(string? search, string? status)
+    public async Task<IReadOnlyList<DoctorDto>> GetAllDoctorsAsync(
+        string? search,
+        string? status,
+        int pageNumber,
+        int pageSize)
     {
-        using var connection = CreateConnection();
+        using var connection = _factory.CreateConnection();
 
         search = string.IsNullOrWhiteSpace(search) ? null : search.Trim();
         status = string.IsNullOrWhiteSpace(status) ? null : status.Trim();
 
+        if (pageNumber <= 0) pageNumber = 1;
+        if (pageSize <= 0 || pageSize > 100) pageSize = 10;
+
         var result = await connection.QueryAsync<DoctorDto>(
             "GetAllDoctors",
-            new { Search = search, Status = status },
+            new
+            {
+                Search = search,
+                Status = status,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            },
             commandType: CommandType.StoredProcedure
         );
 
@@ -43,11 +47,11 @@ public class DoctorService : IDoctorService
     }
 
     // ============================
-    // 🔍 GET BY ID
+    // GET BY ID
     // ============================
     public async Task<DoctorDto?> GetDoctorByIdAsync(int id)
     {
-        using var connection = CreateConnection();
+        using var connection = _factory.CreateConnection();
 
         return await connection.QueryFirstOrDefaultAsync<DoctorDto>(
             @"SELECT 
@@ -68,13 +72,13 @@ public class DoctorService : IDoctorService
     }
 
     // ============================
-    // ➕ CREATE
+    // CREATE
     // ============================
     public async Task<int> AddDoctorAsync(CreateDoctorDto dto)
     {
         ValidateCreate(dto);
 
-        using var connection = CreateConnection();
+        using var connection = _factory.CreateConnection();
 
         var exists = await connection.ExecuteScalarAsync<int>(
             "SELECT COUNT(1) FROM Doctors WHERE LicenseNumber = @LicenseNumber",
@@ -102,13 +106,13 @@ public class DoctorService : IDoctorService
     }
 
     // ============================
-    // ✏️ UPDATE
+    // UPDATE
     // ============================
     public async Task<bool> UpdateDoctorAsync(int id, UpdateDoctorDto dto)
     {
         ValidateUpdate(dto);
 
-        using var connection = CreateConnection();
+        using var connection = _factory.CreateConnection();
 
         await EnsureDoctorExists(connection, id);
 
@@ -135,33 +139,32 @@ public class DoctorService : IDoctorService
     }
 
     // ============================
-    // 🔄 UPDATE STATUS
+    // UPDATE STATUS
     // ============================
     public async Task<bool> UpdateStatusAsync(int id, string status)
     {
-        using var connection = CreateConnection();
+        using var connection = _factory.CreateConnection();
 
         ValidateStatus(status);
 
         await EnsureDoctorExists(connection, id);
 
-        var normalizedStatus = NormalizeStatus(status);
-
         var result = await connection.ExecuteAsync(
             @"UPDATE Doctors 
               SET Status = @Status 
               WHERE Id = @Id AND IsDeleted = 0",
-            new { Id = id, Status = normalizedStatus });
+            new { Id = id, Status = NormalizeStatus(status) }
+        );
 
         return result > 0;
     }
 
     // ============================
-    // 🗑️ SOFT DELETE
+    // SOFT DELETE
     // ============================
     public async Task<bool> DeleteDoctorAsync(int id)
     {
-        using var connection = CreateConnection();
+        using var connection = _factory.CreateConnection();
 
         await EnsureDoctorExists(connection, id);
 
@@ -174,7 +177,7 @@ public class DoctorService : IDoctorService
     }
 
     // ============================
-    // 🔒 PRIVATE HELPERS
+    // PRIVATE HELPERS
     // ============================
 
     private static void ValidateCreate(CreateDoctorDto dto)
@@ -203,9 +206,9 @@ public class DoctorService : IDoctorService
 
     private static void ValidateStatus(string status)
     {
-        var allowedStatuses = new[] { "Active", "Suspended" };
+        var allowed = new[] { "Active", "Suspended" };
 
-        if (!allowedStatuses.Contains(status, StringComparer.OrdinalIgnoreCase))
+        if (!allowed.Contains(status, StringComparer.OrdinalIgnoreCase))
             throw new ArgumentException("Invalid status value");
     }
 

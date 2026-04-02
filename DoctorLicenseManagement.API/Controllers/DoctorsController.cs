@@ -15,12 +15,15 @@ public class DoctorsController : ControllerBase
         _doctorService = doctorService;
     }
 
+    // ============================
+    // CREATE DOCTOR
+    // ============================
     [HttpPost]
-    public async Task<IActionResult> AddDoctor(CreateDoctorDto dto)
+    public async Task<IActionResult> AddDoctor([FromBody] CreateDoctorDto dto)
     {
         var result = await _doctorService.AddDoctorAsync(dto);
 
-        return Ok(new
+        return Created("", new
         {
             success = true,
             message = "Doctor added successfully",
@@ -28,14 +31,45 @@ public class DoctorsController : ControllerBase
         });
     }
 
+    // ============================
+    // GET ALL (SEARCH + FILTER + PAGINATION)
+    // ============================
     [HttpGet]
-    public async Task<IActionResult> GetAll(string? search, string? status)
+    public async Task<IActionResult> GetAll(
+        [FromQuery] string? search,
+        [FromQuery] string? status,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10)
     {
-        var result = await _doctorService.GetAllDoctorsAsync(search, status);
+        var result = await _doctorService.GetAllDoctorsAsync(
+            search,
+            status,
+            pageNumber,
+            pageSize
+        );
 
-        return Ok(new { success = true, data = result });
+        if (result == null || !result.Any())
+        {
+            return NotFound(new
+            {
+                success = false,
+                message = "No doctors found"
+            });
+        }
+
+        return Ok(new
+        {
+            success = true,
+            message = "Doctors fetched successfully",
+            pageNumber,
+            pageSize,
+            data = result
+        });
     }
 
+    // ============================
+    // GET BY ID
+    // ============================
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
@@ -58,8 +92,11 @@ public class DoctorsController : ControllerBase
         });
     }
 
+    // ============================
+    // UPDATE DOCTOR
+    // ============================
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, CreateDoctorDto dto)
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateDoctorDto dto)
     {
         var result = await _doctorService.UpdateDoctorAsync(id, dto);
 
@@ -71,6 +108,9 @@ public class DoctorsController : ControllerBase
         });
     }
 
+    // ============================
+    // UPDATE STATUS
+    // ============================
     [HttpPatch("{id}/status")]
     public async Task<IActionResult> UpdateStatus(int id, [FromBody] string status)
     {
@@ -84,11 +124,27 @@ public class DoctorsController : ControllerBase
         });
     }
 
+    // ============================
+    // DELETE (SOFT DELETE)
+    // ============================
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
         var result = await _doctorService.DeleteDoctorAsync(id);
 
-        return Ok(new { success = result });
+        if (!result)
+        {
+            return NotFound(new
+            {
+                success = false,
+                message = "Doctor not found"
+            });
+        }
+
+        return Ok(new
+        {
+            success = true,
+            message = "Doctor deleted successfully"
+        });
     }
-    }
+}

@@ -4,11 +4,15 @@ namespace DoctorLicenseManagement.Application.Interfaces;
 
 
 // Service contract for managing doctor licenses
-
 public interface IDoctorService
 {
     // Get all doctors with optional search and status filter
-    Task<IReadOnlyList<DoctorDto>> GetAllDoctorsAsync(string? search, string? status);
+    Task<IReadOnlyList<DoctorDto>> GetAllDoctorsAsync(
+    string? search,
+    string? status,
+    int pageNumber,
+    int pageSize
+);
     
     // Get a doctor by ID
     Task<DoctorDto?> GetDoctorByIdAsync(int id);

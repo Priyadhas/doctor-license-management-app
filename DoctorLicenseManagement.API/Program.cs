@@ -10,6 +10,7 @@ builder.Services.AddControllers();
 
 // Dependency Injection
 builder.Services.AddScoped<IDoctorService, DoctorService>();
+builder.Services.AddScoped<IDbConnectionFactory, DbConnectionFactory>();
 
 var app = builder.Build();
 
