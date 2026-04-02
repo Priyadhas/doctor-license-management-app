@@ -1,6 +1,6 @@
-using Microsoft.AspNetCore.Mvc;
 using DoctorLicenseManagement.Application.DTOs;
 using DoctorLicenseManagement.Application.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 
 namespace DoctorLicenseManagement.API.Controllers;
 
@@ -8,49 +8,24 @@ namespace DoctorLicenseManagement.API.Controllers;
 [Route("api/[controller]")]
 public class DoctorsController : ControllerBase
 {
-    private readonly IDoctorService _service;
+    private readonly IDoctorService _doctorService;
 
-    public DoctorsController(IDoctorService service)
+    public DoctorsController(IDoctorService doctorService)
     {
-        _service = service;
+        _doctorService = doctorService;
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] string? search, [FromQuery] string? status)
+    public async Task<IActionResult> GetAll()
     {
-        var result = await _service.GetAllAsync(search, status);
+        var result = await _doctorService.GetAllDoctorsAsync();
         return Ok(result);
     }
 
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(int id)
-    {
-        var doctor = await _service.GetByIdAsync(id);
-
-        if (doctor == null)
-            return NotFound(new { message = "Doctor not found" });
-
-        return Ok(doctor);
-    }
-
     [HttpPost]
-    public async Task<IActionResult> Create(CreateDoctorDto dto)
+    public async Task<IActionResult> AddDoctor(CreateDoctorDto dto)
     {
-        var id = await _service.CreateAsync(dto);
-        return Ok(new { message = "Doctor created", id });
-    }
-
-    [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, CreateDoctorDto dto)
-    {
-        await _service.UpdateAsync(id, dto);
-        return NoContent();
-    }
-
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(int id)
-    {
-        await _service.DeleteAsync(id);
-        return NoContent();
+        var result = await _doctorService.AddDoctorAsync(dto);
+        return Ok(new { Id = result });
     }
 }

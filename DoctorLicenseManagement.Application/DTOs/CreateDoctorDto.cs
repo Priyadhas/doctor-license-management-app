@@ -10,5 +10,7 @@ public class CreateDoctorDto
 
     public string LicenseNumber { get; set; } = string.Empty;
 
-    public DateTime LicenseExpiryDate { get; set; }
+    public DateTime? LicenseExpiryDate { get; set; }
+
+    public string Status { get; set; } = "Active";
 }

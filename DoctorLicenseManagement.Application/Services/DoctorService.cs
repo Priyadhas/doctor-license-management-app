@@ -1,24 +1,18 @@
 using DoctorLicenseManagement.Application.DTOs;
 using DoctorLicenseManagement.Application.Interfaces;
 using System.Data;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using Dapper;
-using Microsoft.Extensions.Configuration;
 
 namespace DoctorLicenseManagement.Application.Services;
 
 public class DoctorService : IDoctorService
 {
-    private readonly IConfiguration _configuration;
-
-    public DoctorService(IConfiguration configuration)
-    {
-        _configuration = configuration;
-    }
-
     private IDbConnection CreateConnection()
     {
-        return new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+        return new SqlConnection(
+            "Server=localhost\\SQLEXPRESS;Database=DoctorDB;Trusted_Connection=True;Encrypt=False;TrustServerCertificate=True;"
+        );
     }
 
     public async Task<IEnumerable<dynamic>> GetAllDoctorsAsync()
@@ -35,6 +29,12 @@ public class DoctorService : IDoctorService
 
     public async Task<int> AddDoctorAsync(CreateDoctorDto dto)
     {
+        // VALIDATION
+        if (dto.LicenseExpiryDate < new DateTime(1753, 1, 1))
+        {
+            throw new ArgumentException("Invalid License Expiry Date");
+        }
+
         using var connection = CreateConnection();
 
         var parameters = new
