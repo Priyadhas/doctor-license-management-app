@@ -15,8 +15,6 @@ var app = builder.Build();
 // Middleware
 app.UseMiddleware<ExceptionMiddleware>();
 
-app.UseHttpsRedirection();
-
 app.UseAuthorization();
 
 app.MapControllers();

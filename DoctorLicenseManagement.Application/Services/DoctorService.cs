@@ -29,16 +29,28 @@ public class DoctorService : IDoctorService
     }
 
     public async Task<DoctorDto?> GetDoctorByIdAsync(int id)
-    {
-        using var connection = CreateConnection();
+        {
+    using var connection = CreateConnection();
 
-        var result = await connection.QueryFirstOrDefaultAsync<DoctorDto>(
-            "SELECT * FROM Doctors WHERE Id = @Id AND IsDeleted = 0",
-            new { Id = id }
-        );
+    var result = await connection.QueryFirstOrDefaultAsync<DoctorDto>(
+        @"SELECT 
+            Id,
+            FullName,
+            Email,
+            Specialization,
+            LicenseNumber,
+            LicenseExpiryDate,
+            CASE 
+                WHEN LicenseExpiryDate < CAST(GETDATE() AS DATE) THEN 'Expired'
+                ELSE Status
+            END AS Status
+          FROM Doctors
+          WHERE Id = @Id AND IsDeleted = 0",
+        new { Id = id }
+    );
 
-        return result;
-    }
+    return result;
+}
 
     public async Task<int> AddDoctorAsync(CreateDoctorDto dto)
     {

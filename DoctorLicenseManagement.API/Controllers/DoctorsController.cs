@@ -15,19 +15,6 @@ public class DoctorsController : ControllerBase
         _doctorService = doctorService;
     }
 
-    [HttpGet]
-    public async Task<IActionResult> GetAll()
-    {
-        var result = await _doctorService.GetAllDoctorsAsync();
-
-        return Ok(new
-        {
-            success = true,
-            message = "Doctors fetched successfully",
-            data = result
-        });
-    }
-
     [HttpPost]
     public async Task<IActionResult> AddDoctor(CreateDoctorDto dto)
     {
@@ -42,42 +29,56 @@ public class DoctorsController : ControllerBase
     }
 
     [HttpGet]
-public async Task<IActionResult> GetAll(string? search, string? status)
-{
-    var result = await _doctorService.GetAllDoctorsAsync(search, status);
+    public async Task<IActionResult> GetAll(string? search, string? status)
+    {
+        var result = await _doctorService.GetAllDoctorsAsync(search, status);
 
-    return Ok(new { success = true, data = result });
-}
+        return Ok(new { success = true, data = result });
+    }
 
-[HttpGet("{id}")]
-public async Task<IActionResult> GetById(int id)
-{
-    var result = await _doctorService.GetDoctorByIdAsync(id);
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(int id)
+    {
+        var result = await _doctorService.GetDoctorByIdAsync(id);
 
-    return Ok(new { success = true, data = result });
-}
+        if (result == null)
+        {
+            return NotFound(new
+            {
+                success = false,
+                message = "Doctor not found"
+            });
+        }
 
-[HttpPut("{id}")]
-public async Task<IActionResult> Update(int id, CreateDoctorDto dto)
-{
-    var result = await _doctorService.UpdateDoctorAsync(id, dto);
+        return Ok(new
+        {
+            success = true,
+            message = "Doctor fetched successfully",
+            data = result
+        });
+    }
 
-    return Ok(new { success = result });
-}
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(int id, CreateDoctorDto dto)
+    {
+        var result = await _doctorService.UpdateDoctorAsync(id, dto);
 
-[HttpPatch("{id}/status")]
-public async Task<IActionResult> UpdateStatus(int id, string status)
-{
-    var result = await _doctorService.UpdateStatusAsync(id, status);
+        return Ok(new { success = result });
+    }
 
-    return Ok(new { success = result });
-}
+    [HttpPatch("{id}/status")]
+    public async Task<IActionResult> UpdateStatus(int id, string status)
+    {
+        var result = await _doctorService.UpdateStatusAsync(id, status);
 
-[HttpDelete("{id}")]
-public async Task<IActionResult> Delete(int id)
-{
-    var result = await _doctorService.DeleteDoctorAsync(id);
+        return Ok(new { success = result });
+    }
 
-    return Ok(new { success = result });
-}
-}
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var result = await _doctorService.DeleteDoctorAsync(id);
+
+        return Ok(new { success = result });
+    }
+    }
