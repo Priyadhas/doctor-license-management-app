@@ -1,0 +1,11 @@
+CREATE TABLE Doctors (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    FullName NVARCHAR(100) NOT NULL,
+    Email NVARCHAR(100) NOT NULL,
+    Specialization NVARCHAR(100),
+    LicenseNumber NVARCHAR(50) UNIQUE NOT NULL,
+    LicenseExpiryDate DATE NOT NULL,
+    Status NVARCHAR(50) NOT NULL,
+    IsDeleted BIT DEFAULT 0,
+    CreatedDate DATETIME DEFAULT GETDATE()
+);
