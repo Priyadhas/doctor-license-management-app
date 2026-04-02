@@ -75,3 +75,4 @@ D:\Doctor License Management\DoctorLicenseManagement.API\obj\Debug\net8.0\refint
 D:\Doctor License Management\DoctorLicenseManagement.API\obj\Debug\net8.0\DoctorLicenseManagement.API.pdb
 D:\Doctor License Management\DoctorLicenseManagement.API\obj\Debug\net8.0\DoctorLicenseManagement.API.genruntimeconfig.cache
 D:\Doctor License Management\DoctorLicenseManagement.API\obj\Debug\net8.0\ref\DoctorLicenseManagement.API.dll
+D:\Doctor License Management\DoctorLicenseManagement.API\bin\Debug\net8.0\Database\setup.sql
