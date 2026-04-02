@@ -82,35 +82,64 @@ public class DoctorService : IDoctorService
 
     public async Task<bool> UpdateDoctorAsync(int id, CreateDoctorDto dto)
     {
-        using var connection = CreateConnection();
+    using var connection = CreateConnection();
 
-        var query = @"UPDATE Doctors SET
-                        FullName = @FullName,
-                        Email = @Email,
-                        Specialization = @Specialization,
-                        LicenseExpiryDate = @LicenseExpiryDate,
-                        Status = @Status
-                      WHERE Id = @Id";
+    // Check if doctor exists
+    var exists = await connection.ExecuteScalarAsync<int>(
+        "SELECT COUNT(1) FROM Doctors WHERE Id = @Id AND IsDeleted = 0",
+        new { Id = id }
+    );
 
-        var result = await connection.ExecuteAsync(query, new
-        {
-            Id = id,
-            dto.FullName,
-            dto.Email,
-            dto.Specialization,
-            dto.LicenseExpiryDate,
-            dto.Status
-        });
+    if (exists == 0)
+        throw new Exception("Doctor not found");
 
-        return result > 0;
+    var query = @"
+        UPDATE Doctors
+        SET 
+            FullName = @FullName,
+            Email = @Email,
+            Specialization = @Specialization,
+            LicenseExpiryDate = @LicenseExpiryDate,
+            Status = @Status
+        WHERE Id = @Id";
+
+    var result = await connection.ExecuteAsync(query, new
+    {
+        Id = id,
+        dto.FullName,
+        dto.Email,
+        dto.Specialization,
+        dto.LicenseExpiryDate,
+        dto.Status
+    });
+
+    return result > 0;
     }
 
     public async Task<bool> UpdateStatusAsync(int id, string status)
     {
         using var connection = CreateConnection();
 
+        // VALIDATE STATUS
+        var allowedStatuses = new[] { "Active", "Suspended" };
+
+        if (!allowedStatuses.Contains(status, StringComparer.OrdinalIgnoreCase))
+    throw new Exception("Invalid status value");
+
+        // check if doctor exists
+        var exists = await connection.ExecuteScalarAsync<int>(
+            "SELECT COUNT(1) FROM Doctors WHERE Id = @Id AND IsDeleted = 0",
+            new { Id = id }
+        );
+
+        if (exists == 0)
+            throw new Exception("Doctor not found");
+
+        // UPDATE STATUS
         var result = await connection.ExecuteAsync(
-            "UPDATE Doctors SET Status = @Status WHERE Id = @Id",
+            @"UPDATE Doctors 
+            SET Status = @Status 
+            WHERE Id = @Id",
             new { Id = id, Status = status }
         );
 

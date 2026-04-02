@@ -14,4 +14,10 @@
     <ProjectReference Include="..\DoctorLicenseManagement.Application\DoctorLicenseManagement.Application.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+  <None Include="Database\setup.sql">
+    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+  </None>
+</ItemGroup>
+
 </Project>

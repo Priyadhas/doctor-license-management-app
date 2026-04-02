@@ -1,6 +1,7 @@
 using DoctorLicenseManagement.Application.Interfaces;
 using DoctorLicenseManagement.Application.Services;
 using DoctorLicenseManagement.API.Middleware;
+using DoctorLicenseManagement.API.Database;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,10 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<IDoctorService, DoctorService>();
 
 var app = builder.Build();
+
+// Database Initializer
+var initializer = new DatabaseInitializer(builder.Configuration);
+await initializer.InitializeAsync();
 
 // Middleware
 app.UseMiddleware<ExceptionMiddleware>();

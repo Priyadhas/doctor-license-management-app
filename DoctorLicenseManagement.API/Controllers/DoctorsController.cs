@@ -63,15 +63,25 @@ public class DoctorsController : ControllerBase
     {
         var result = await _doctorService.UpdateDoctorAsync(id, dto);
 
-        return Ok(new { success = result });
+        return Ok(new
+        {
+            success = true,
+            message = "Doctor updated successfully",
+            data = result
+        });
     }
 
     [HttpPatch("{id}/status")]
-    public async Task<IActionResult> UpdateStatus(int id, string status)
+    public async Task<IActionResult> UpdateStatus(int id, [FromBody] string status)
     {
         var result = await _doctorService.UpdateStatusAsync(id, status);
 
-        return Ok(new { success = result });
+        return Ok(new
+        {
+            success = true,
+            message = "Doctor status updated successfully",
+            data = result
+        });
     }
 
     [HttpDelete("{id}")]
