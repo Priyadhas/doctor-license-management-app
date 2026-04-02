@@ -4,6 +4,6 @@ namespace DoctorLicenseManagement.Application.Interfaces;
 
 public interface IDoctorService
 {
-    Task<IEnumerable<dynamic>> GetAllDoctorsAsync();
+    Task<IEnumerable<DoctorDto>> GetAllDoctorsAsync();
     Task<int> AddDoctorAsync(CreateDoctorDto dto);
 }

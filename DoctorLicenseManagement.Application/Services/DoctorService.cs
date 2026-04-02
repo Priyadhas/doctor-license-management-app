@@ -15,7 +15,7 @@ public class DoctorService : IDoctorService
         );
     }
 
-    public async Task<IEnumerable<dynamic>> GetAllDoctorsAsync()
+    public async Task<IEnumerable<DoctorDto>> GetAllDoctorsAsync()
     {
         using var connection = CreateConnection();
 

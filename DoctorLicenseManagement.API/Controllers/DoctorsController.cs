@@ -19,13 +19,25 @@ public class DoctorsController : ControllerBase
     public async Task<IActionResult> GetAll()
     {
         var result = await _doctorService.GetAllDoctorsAsync();
-        return Ok(result);
+
+        return Ok(new
+        {
+            success = true,
+            message = "Doctors fetched successfully",
+            data = result
+        });
     }
 
     [HttpPost]
     public async Task<IActionResult> AddDoctor(CreateDoctorDto dto)
     {
         var result = await _doctorService.AddDoctorAsync(dto);
-        return Ok(new { message = "Doctor added successfully", result });
+
+        return Ok(new
+        {
+            success = true,
+            message = "Doctor added successfully",
+            data = result
+        });
     }
 }
