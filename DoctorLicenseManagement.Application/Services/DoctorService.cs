@@ -30,6 +30,11 @@ public class DoctorService : IDoctorService
     public async Task<int> AddDoctorAsync(CreateDoctorDto dto)
     {
         // VALIDATION
+        if (dto.LicenseExpiryDate == null)
+        {
+            throw new ArgumentException("License Expiry Date is required");
+        }
+
         if (dto.LicenseExpiryDate < new DateTime(1753, 1, 1))
         {
             throw new ArgumentException("Invalid License Expiry Date");
@@ -37,13 +42,25 @@ public class DoctorService : IDoctorService
 
         using var connection = CreateConnection();
 
+        // CHECK DUPLICATE
+        var exists = await connection.ExecuteScalarAsync<int>(
+            "SELECT COUNT(1) FROM Doctors WHERE LicenseNumber = @LicenseNumber",
+            new { dto.LicenseNumber }
+        );
+
+        if (exists > 0)
+        {
+            throw new Exception("License number already exists");
+        }
+
+        // INSERT
         var parameters = new
         {
             dto.FullName,
             dto.Email,
             dto.Specialization,
             dto.LicenseNumber,
-            dto.LicenseExpiryDate,
+            LicenseExpiryDate = dto.LicenseExpiryDate.Value,
             dto.Status
         };
 

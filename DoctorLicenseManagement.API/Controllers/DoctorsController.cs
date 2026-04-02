@@ -26,6 +26,6 @@ public class DoctorsController : ControllerBase
     public async Task<IActionResult> AddDoctor(CreateDoctorDto dto)
     {
         var result = await _doctorService.AddDoctorAsync(dto);
-        return Ok(new { Id = result });
+        return Ok(new { message = "Doctor added successfully", result });
     }
 }
