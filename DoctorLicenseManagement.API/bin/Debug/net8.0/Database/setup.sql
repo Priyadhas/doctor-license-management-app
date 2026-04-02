@@ -164,6 +164,8 @@ BEGIN
         @LicenseExpiryDate,
         @Status
     );
+
+    SELECT CAST(SCOPE_IDENTITY() AS INT);
 END
 GO
 

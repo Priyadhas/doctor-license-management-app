@@ -7,6 +7,17 @@ CREATE OR ALTER PROCEDURE AddDoctor
     @Status NVARCHAR(50)
 AS
 BEGIN
+    SET NOCOUNT ON;
+
+    -- Duplicate check
+    IF EXISTS (
+        SELECT 1 FROM Doctors WHERE LicenseNumber = @LicenseNumber
+    )
+    BEGIN
+        RAISERROR('License number already exists', 16, 1);
+        RETURN;
+    END
+
     INSERT INTO Doctors (
         FullName,
         Email,
@@ -23,4 +34,7 @@ BEGIN
         @LicenseExpiryDate,
         @Status
     );
-END;
+
+    -- RETURN NEW ID
+    SELECT CAST(SCOPE_IDENTITY() AS INT);
+END

@@ -88,6 +88,12 @@ public class DoctorService : IDoctorService
         if (exists > 0)
             throw new InvalidOperationException("License number already exists");
 
+        if (dto.LicenseExpiryDate == null)
+            throw new ArgumentException("License Expiry Date is required");
+
+        if (dto.LicenseExpiryDate < DateTime.Today)
+            throw new ArgumentException("License expiry date cannot be in the past");
+             
         var parameters = new
         {
             dto.FullName,
@@ -98,11 +104,13 @@ public class DoctorService : IDoctorService
             Status = NormalizeStatus(dto.Status)
         };
 
-        return await connection.ExecuteAsync(
+        var id = await connection.ExecuteScalarAsync<int>(
             "AddDoctor",
             parameters,
             commandType: CommandType.StoredProcedure
         );
+
+        return id;
     }
 
     // ============================
