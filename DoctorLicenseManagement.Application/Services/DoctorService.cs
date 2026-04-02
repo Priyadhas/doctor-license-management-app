@@ -19,7 +19,7 @@ public class DoctorService : IDoctorService
     {
         using var connection = CreateConnection();
 
-        var result = await connection.QueryAsync(
+        var result = await connection.QueryAsync<DoctorDto>(
             "GetAllDoctors",
             commandType: CommandType.StoredProcedure
         );
