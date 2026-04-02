@@ -10,3 +10,9 @@ D:\Doctor License Management\DoctorLicenseManagement.Infrastructure\obj\Debug\ne
 D:\Doctor License Management\DoctorLicenseManagement.Infrastructure\obj\Debug\net8.0\refint\DoctorLicenseManagement.Infrastructure.dll
 D:\Doctor License Management\DoctorLicenseManagement.Infrastructure\obj\Debug\net8.0\DoctorLicenseManagement.Infrastructure.pdb
 D:\Doctor License Management\DoctorLicenseManagement.Infrastructure\obj\Debug\net8.0\ref\DoctorLicenseManagement.Infrastructure.dll
+D:\Doctor License Management\DoctorLicenseManagement.Infrastructure\obj\Debug\net8.0\DoctorLicenseManagement.Infrastructure.csproj.AssemblyReference.cache
+D:\Doctor License Management\DoctorLicenseManagement.Infrastructure\bin\Debug\net8.0\DoctorLicenseManagement.Application.dll
+D:\Doctor License Management\DoctorLicenseManagement.Infrastructure\bin\Debug\net8.0\DoctorLicenseManagement.Domain.dll
+D:\Doctor License Management\DoctorLicenseManagement.Infrastructure\bin\Debug\net8.0\DoctorLicenseManagement.Application.pdb
+D:\Doctor License Management\DoctorLicenseManagement.Infrastructure\bin\Debug\net8.0\DoctorLicenseManagement.Domain.pdb
+D:\Doctor License Management\DoctorLicenseManagement.Infrastructure\obj\Debug\net8.0\DoctorLi.70035F9B.Up2Date

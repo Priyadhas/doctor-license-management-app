@@ -1,38 +1,17 @@
 -- =============================================
--- IDEMPOTENT DATABASE SETUP SCRIPT
+-- DATABASE CREATION (SAFE)
 -- =============================================
-
--- CREATE TABLE
-IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Doctors' AND xtype='U')
+IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'DoctorDB')
 BEGIN
-    CREATE TABLE Doctors (
-        Id INT IDENTITY(1,1) PRIMARY KEY,
-        FullName NVARCHAR(100),
-        Email NVARCHAR(100),
-        Specialization NVARCHAR(100),
-        LicenseNumber NVARCHAR(50) UNIQUE,
-        LicenseExpiryDate DATE,
-        Status NVARCHAR(50),
-        CreatedDate DATETIME DEFAULT GETDATE(),
-        IsDeleted BIT DEFAULT 0
-    );
+    CREATE DATABASE DoctorDB;
 END
 GO
 
--- ADD CONSTRAINT (SAFE)
-IF NOT EXISTS (
-    SELECT * FROM sys.check_constraints 
-    WHERE name = 'CHK_Status'
-)
-BEGIN
-    ALTER TABLE Doctors
-    ADD CONSTRAINT CHK_Status
-    CHECK (Status IN ('Active', 'Suspended'));
-END
+USE DoctorDB;
 GO
 
 -- =============================================
--- CREATE TABLE (SAFE)
+-- CREATE TABLE (SINGLE SOURCE OF TRUTH)
 -- =============================================
 IF OBJECT_ID('dbo.Doctors', 'U') IS NULL
 BEGIN
@@ -46,8 +25,8 @@ BEGIN
         LicenseNumber NVARCHAR(50) NOT NULL UNIQUE,
         LicenseExpiryDate DATE NOT NULL,
         Status NVARCHAR(50) NOT NULL,
-        IsDeleted BIT DEFAULT 0,
-        CreatedDate DATETIME DEFAULT GETDATE()
+        IsDeleted BIT NOT NULL DEFAULT 0,
+        CreatedDate DATETIME NOT NULL DEFAULT GETDATE()
     );
 END
 ELSE
@@ -57,7 +36,42 @@ END
 GO
 
 -- =============================================
--- INDEX (PERFORMANCE - TOP 1% DETAIL)
+-- CLEAN INVALID DATA (SAFE MIGRATION)
+-- =============================================
+UPDATE Doctors
+SET Status = 'Active'
+WHERE Status NOT IN ('Active', 'Suspended');
+GO
+
+-- =============================================
+-- ADD CONSTRAINT (SAFE)
+-- =============================================
+IF NOT EXISTS (
+    SELECT 1 FROM sys.check_constraints 
+    WHERE name = 'CHK_Status'
+)
+BEGIN
+    ALTER TABLE Doctors
+    ADD CONSTRAINT CHK_Status
+    CHECK (Status IN ('Active', 'Suspended'));
+END
+GO
+
+-- =============================================
+-- ADD DEFAULT CONSTRAINT (OPTIONAL BEST PRACTICE)
+-- =============================================
+IF NOT EXISTS (
+    SELECT 1 FROM sys.default_constraints 
+    WHERE name = 'DF_Doctors_Status'
+)
+BEGIN
+    ALTER TABLE Doctors
+    ADD CONSTRAINT DF_Doctors_Status DEFAULT 'Active' FOR Status;
+END
+GO
+
+-- =============================================
+-- INDEX (PERFORMANCE OPTIMIZATION)
 -- =============================================
 IF NOT EXISTS (
     SELECT 1 FROM sys.indexes 
@@ -70,7 +84,7 @@ END
 GO
 
 -- =============================================
--- STORED PROCEDURE: GET ALL
+-- 🟢 STORED PROCEDURE: GET ALL (SEARCH + FILTER)
 -- =============================================
 CREATE OR ALTER PROCEDURE GetAllDoctors
     @Search NVARCHAR(100) = NULL,
@@ -87,7 +101,6 @@ BEGIN
         LicenseNumber,
         LicenseExpiryDate,
 
-        -- AUTO EXPIRY LOGIC
         CASE 
             WHEN LicenseExpiryDate < CAST(GETDATE() AS DATE) THEN 'Expired'
             ELSE Status
@@ -98,14 +111,12 @@ BEGIN
     FROM Doctors
     WHERE IsDeleted = 0
 
-    -- SEARCH
     AND (
         @Search IS NULL OR
         FullName LIKE '%' + @Search + '%' OR
         LicenseNumber LIKE '%' + @Search + '%'
     )
 
-    -- FILTER
     AND (
         @Status IS NULL OR
         Status = @Status
@@ -129,7 +140,6 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- DUPLICATE CHECK (DOUBLE SAFETY)
     IF EXISTS (
         SELECT 1 FROM Doctors WHERE LicenseNumber = @LicenseNumber
     )
@@ -193,7 +203,7 @@ BEGIN
 
     UPDATE Doctors
     SET IsDeleted = 1
-    WHERE Id = @Id;
+    WHERE Id = @Id AND IsDeleted = 0;
 END
 GO
 
@@ -214,7 +224,7 @@ END
 GO
 
 -- =============================================
--- OPTIONAL SEED DATA (SAFE)
+-- SEED DATA (SAFE)
 -- =============================================
 IF NOT EXISTS (SELECT 1 FROM Doctors)
 BEGIN
@@ -227,4 +237,4 @@ BEGIN
 END
 GO
 
-PRINT 'Database setup completed successfully!';
+PRINT ' Database setup completed successfully!';

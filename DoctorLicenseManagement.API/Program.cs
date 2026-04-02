@@ -2,6 +2,7 @@ using DoctorLicenseManagement.Application.Interfaces;
 using DoctorLicenseManagement.Application.Services;
 using DoctorLicenseManagement.API.Middleware;
 using DoctorLicenseManagement.API.Database;
+using DoctorLicenseManagement.Infrastructure.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 

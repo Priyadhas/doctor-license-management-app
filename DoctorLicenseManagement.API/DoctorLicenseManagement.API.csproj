@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DoctorLicenseManagement.Application\DoctorLicenseManagement.Application.csproj" />
+    <ProjectReference Include="..\DoctorLicenseManagement.Infrastructure\DoctorLicenseManagement.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
