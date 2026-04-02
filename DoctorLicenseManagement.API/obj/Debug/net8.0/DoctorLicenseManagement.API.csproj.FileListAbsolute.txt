@@ -1,0 +1,8 @@
+D:\Doctor License Management\DoctorLicenseManagement.API\obj\Debug\net8.0\DoctorLicenseManagement.API.csproj.AssemblyReference.cache
+D:\Doctor License Management\DoctorLicenseManagement.API\obj\Debug\net8.0\DoctorLicenseManagement.API.GeneratedMSBuildEditorConfig.editorconfig
+D:\Doctor License Management\DoctorLicenseManagement.API\obj\Debug\net8.0\DoctorLicenseManagement.API.AssemblyInfoInputs.cache
+D:\Doctor License Management\DoctorLicenseManagement.API\obj\Debug\net8.0\DoctorLicenseManagement.API.AssemblyInfo.cs
+D:\Doctor License Management\DoctorLicenseManagement.API\obj\Debug\net8.0\DoctorLicenseManagement.API.csproj.CoreCompileInputs.cache
+D:\Doctor License Management\DoctorLicenseManagement.API\obj\Debug\net8.0\DoctorLicenseManagement.API.MvcApplicationPartsAssemblyInfo.cs
+D:\Doctor License Management\DoctorLicenseManagement.API\obj\Debug\net8.0\DoctorLicenseManagement.API.MvcApplicationPartsAssemblyInfo.cache
+D:\Doctor License Management\DoctorLicenseManagement.API\obj\Debug\net8.0\DoctorLicenseManagement.API.sourcelink.json

@@ -1,0 +1,39 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "DoctorLicenseManagement.Application/1.0.0": {
+        "dependencies": {
+          "DoctorLicenseManagement.Domain": "1.0.0"
+        },
+        "runtime": {
+          "DoctorLicenseManagement.Application.dll": {}
+        }
+      },
+      "DoctorLicenseManagement.Domain/1.0.0": {
+        "runtime": {
+          "DoctorLicenseManagement.Domain.dll": {
+            "assemblyVersion": "1.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "DoctorLicenseManagement.Application/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "DoctorLicenseManagement.Domain/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}
