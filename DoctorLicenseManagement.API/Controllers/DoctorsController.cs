@@ -40,4 +40,44 @@ public class DoctorsController : ControllerBase
             data = result
         });
     }
+
+    [HttpGet]
+public async Task<IActionResult> GetAll(string? search, string? status)
+{
+    var result = await _doctorService.GetAllDoctorsAsync(search, status);
+
+    return Ok(new { success = true, data = result });
+}
+
+[HttpGet("{id}")]
+public async Task<IActionResult> GetById(int id)
+{
+    var result = await _doctorService.GetDoctorByIdAsync(id);
+
+    return Ok(new { success = true, data = result });
+}
+
+[HttpPut("{id}")]
+public async Task<IActionResult> Update(int id, CreateDoctorDto dto)
+{
+    var result = await _doctorService.UpdateDoctorAsync(id, dto);
+
+    return Ok(new { success = result });
+}
+
+[HttpPatch("{id}/status")]
+public async Task<IActionResult> UpdateStatus(int id, string status)
+{
+    var result = await _doctorService.UpdateStatusAsync(id, status);
+
+    return Ok(new { success = result });
+}
+
+[HttpDelete("{id}")]
+public async Task<IActionResult> Delete(int id)
+{
+    var result = await _doctorService.DeleteDoctorAsync(id);
+
+    return Ok(new { success = result });
+}
 }

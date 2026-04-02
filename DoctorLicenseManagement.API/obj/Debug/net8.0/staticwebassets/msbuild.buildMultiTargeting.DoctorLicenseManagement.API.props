@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\DoctorLicenseManagement.API.props" />
+</Project>

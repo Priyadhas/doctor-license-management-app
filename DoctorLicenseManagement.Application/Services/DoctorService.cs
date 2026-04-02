@@ -15,13 +15,26 @@ public class DoctorService : IDoctorService
         );
     }
 
-    public async Task<IEnumerable<DoctorDto>> GetAllDoctorsAsync()
+    public async Task<IEnumerable<DoctorDto>> GetAllDoctorsAsync(string? search, string? status)
     {
         using var connection = CreateConnection();
 
         var result = await connection.QueryAsync<DoctorDto>(
             "GetAllDoctors",
+            new { Search = search, Status = status },
             commandType: CommandType.StoredProcedure
+        );
+
+        return result;
+    }
+
+    public async Task<DoctorDto?> GetDoctorByIdAsync(int id)
+    {
+        using var connection = CreateConnection();
+
+        var result = await connection.QueryFirstOrDefaultAsync<DoctorDto>(
+            "SELECT * FROM Doctors WHERE Id = @Id AND IsDeleted = 0",
+            new { Id = id }
         );
 
         return result;
@@ -29,31 +42,19 @@ public class DoctorService : IDoctorService
 
     public async Task<int> AddDoctorAsync(CreateDoctorDto dto)
     {
-        // VALIDATION
         if (dto.LicenseExpiryDate == null)
-        {
             throw new ArgumentException("License Expiry Date is required");
-        }
-
-        if (dto.LicenseExpiryDate < new DateTime(1753, 1, 1))
-        {
-            throw new ArgumentException("Invalid License Expiry Date");
-        }
 
         using var connection = CreateConnection();
 
-        // CHECK DUPLICATE
         var exists = await connection.ExecuteScalarAsync<int>(
             "SELECT COUNT(1) FROM Doctors WHERE LicenseNumber = @LicenseNumber",
             new { dto.LicenseNumber }
         );
 
         if (exists > 0)
-        {
             throw new Exception("License number already exists");
-        }
 
-        // INSERT
         var parameters = new
         {
             dto.FullName,
@@ -64,12 +65,55 @@ public class DoctorService : IDoctorService
             dto.Status
         };
 
+        return await connection.ExecuteAsync("AddDoctor", parameters, commandType: CommandType.StoredProcedure);
+    }
+
+    public async Task<bool> UpdateDoctorAsync(int id, CreateDoctorDto dto)
+    {
+        using var connection = CreateConnection();
+
+        var query = @"UPDATE Doctors SET
+                        FullName = @FullName,
+                        Email = @Email,
+                        Specialization = @Specialization,
+                        LicenseExpiryDate = @LicenseExpiryDate,
+                        Status = @Status
+                      WHERE Id = @Id";
+
+        var result = await connection.ExecuteAsync(query, new
+        {
+            Id = id,
+            dto.FullName,
+            dto.Email,
+            dto.Specialization,
+            dto.LicenseExpiryDate,
+            dto.Status
+        });
+
+        return result > 0;
+    }
+
+    public async Task<bool> UpdateStatusAsync(int id, string status)
+    {
+        using var connection = CreateConnection();
+
         var result = await connection.ExecuteAsync(
-            "AddDoctor",
-            parameters,
-            commandType: CommandType.StoredProcedure
+            "UPDATE Doctors SET Status = @Status WHERE Id = @Id",
+            new { Id = id, Status = status }
         );
 
-        return result;
+        return result > 0;
+    }
+
+    public async Task<bool> DeleteDoctorAsync(int id)
+    {
+        using var connection = CreateConnection();
+
+        var result = await connection.ExecuteAsync(
+            "UPDATE Doctors SET IsDeleted = 1 WHERE Id = @Id",
+            new { Id = id }
+        );
+
+        return result > 0;
     }
 }

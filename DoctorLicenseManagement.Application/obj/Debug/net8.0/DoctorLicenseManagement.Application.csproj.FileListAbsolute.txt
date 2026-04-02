@@ -4,3 +4,13 @@ D:\Doctor License Management\DoctorLicenseManagement.Application\obj\Debug\net8.
 D:\Doctor License Management\DoctorLicenseManagement.Application\obj\Debug\net8.0\DoctorLicenseManagement.Application.AssemblyInfo.cs
 D:\Doctor License Management\DoctorLicenseManagement.Application\obj\Debug\net8.0\DoctorLicenseManagement.Application.csproj.CoreCompileInputs.cache
 D:\Doctor License Management\DoctorLicenseManagement.Application\obj\Debug\net8.0\DoctorLicenseManagement.Application.sourcelink.json
+D:\Doctor License Management\DoctorLicenseManagement.Application\bin\Debug\net8.0\DoctorLicenseManagement.Application.deps.json
+D:\Doctor License Management\DoctorLicenseManagement.Application\bin\Debug\net8.0\DoctorLicenseManagement.Application.dll
+D:\Doctor License Management\DoctorLicenseManagement.Application\bin\Debug\net8.0\DoctorLicenseManagement.Application.pdb
+D:\Doctor License Management\DoctorLicenseManagement.Application\bin\Debug\net8.0\DoctorLicenseManagement.Domain.dll
+D:\Doctor License Management\DoctorLicenseManagement.Application\bin\Debug\net8.0\DoctorLicenseManagement.Domain.pdb
+D:\Doctor License Management\DoctorLicenseManagement.Application\obj\Debug\net8.0\DoctorLi.57CDFB30.Up2Date
+D:\Doctor License Management\DoctorLicenseManagement.Application\obj\Debug\net8.0\DoctorLicenseManagement.Application.dll
+D:\Doctor License Management\DoctorLicenseManagement.Application\obj\Debug\net8.0\refint\DoctorLicenseManagement.Application.dll
+D:\Doctor License Management\DoctorLicenseManagement.Application\obj\Debug\net8.0\DoctorLicenseManagement.Application.pdb
+D:\Doctor License Management\DoctorLicenseManagement.Application\obj\Debug\net8.0\ref\DoctorLicenseManagement.Application.dll
