@@ -1,4 +1,5 @@
 using DoctorLicenseManagement.Application.Interfaces;
+using DoctorLicenseManagement.Domain.Entities;
 using Dapper;
 using System.Data;
 
@@ -19,7 +20,7 @@ public class AuthService : IAuthService
     {
         using var connection = _factory.CreateConnection();
 
-        var user = await connection.QueryFirstOrDefaultAsync<dynamic>(
+        var user = await connection.QueryFirstOrDefaultAsync<User>(
             "SELECT * FROM Users WHERE Email = @Email",
             new { Email = email });
 

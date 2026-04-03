@@ -7,7 +7,7 @@ namespace DoctorLicenseManagement.Application.Interfaces;
 public interface IDoctorService
 {
     // Get all doctors with optional search and status filter
-    Task<IReadOnlyList<DoctorDto>> GetAllDoctorsAsync(
+    Task<PaginatedResponse<DoctorDto>> GetAllDoctorsAsync(
     string? search,
     string? status,
     int pageNumber,

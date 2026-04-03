@@ -52,15 +52,6 @@ public class DoctorsController : ControllerBase
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10)
     {
-        if (pageNumber <= 0 || pageSize <= 0)
-        {
-            return BadRequest(new
-            {
-                success = false,
-                message = "Invalid pagination values"
-            });
-        }
-
         var result = await _doctorService.GetAllDoctorsAsync(
             search,
             status,
@@ -68,25 +59,17 @@ public class DoctorsController : ControllerBase
             pageSize
         );
 
-        if (result == null || !result.Any())
-        {
-            return NotFound(new
-            {
-                success = false,
-                message = "No doctors found"
-            });
-        }
-
         return Ok(new
         {
             success = true,
             message = "Doctors fetched successfully",
-            pageNumber,
-            pageSize,
-            count = result.Count,
-            data = result
+            pageNumber = result.PageNumber,
+            pageSize = result.PageSize,
+            totalCount = result.TotalCount,
+            totalPages = result.TotalPages,
+            data = result.Data
         });
-    }
+    } 
 
     // ============================
     // GET BY ID
