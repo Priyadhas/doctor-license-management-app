@@ -11,7 +11,7 @@ USE DoctorDB;
 GO
 
 -- =============================================
--- CREATE TABLE (SINGLE SOURCE OF TRUTH)
+-- CREATE DOCTORS TABLE
 -- =============================================
 IF OBJECT_ID('dbo.Doctors', 'U') IS NULL
 BEGIN
@@ -36,7 +36,28 @@ END
 GO
 
 -- =============================================
--- CLEAN INVALID DATA (SAFE MIGRATION)
+-- CREATE USERS TABLE (JWT AUTH)
+-- =============================================
+IF OBJECT_ID('dbo.Users', 'U') IS NULL
+BEGIN
+    PRINT 'Creating Users Table...';
+
+    CREATE TABLE Users (
+        Id INT IDENTITY(1,1) PRIMARY KEY,
+        Email NVARCHAR(100) NOT NULL UNIQUE,
+        Password NVARCHAR(100) NOT NULL,
+        Role NVARCHAR(50) NOT NULL DEFAULT 'User',
+        CreatedDate DATETIME NOT NULL DEFAULT GETDATE()
+    );
+END
+ELSE
+BEGIN
+    PRINT 'Users Table already exists';
+END
+GO
+
+-- =============================================
+-- CLEAN INVALID STATUS DATA
 -- =============================================
 UPDATE Doctors
 SET Status = 'Active'
@@ -44,7 +65,7 @@ WHERE Status NOT IN ('Active', 'Suspended');
 GO
 
 -- =============================================
--- ADD CONSTRAINT (SAFE)
+-- ADD STATUS CHECK CONSTRAINT
 -- =============================================
 IF NOT EXISTS (
     SELECT 1 FROM sys.check_constraints 
@@ -58,7 +79,7 @@ END
 GO
 
 -- =============================================
--- ADD DEFAULT CONSTRAINT (OPTIONAL BEST PRACTICE)
+-- DEFAULT STATUS
 -- =============================================
 IF NOT EXISTS (
     SELECT 1 FROM sys.default_constraints 
@@ -71,11 +92,10 @@ END
 GO
 
 -- =============================================
--- INDEX (PERFORMANCE OPTIMIZATION)
+-- INDEXES (PERFORMANCE)
 -- =============================================
 IF NOT EXISTS (
-    SELECT 1 FROM sys.indexes 
-    WHERE name = 'IX_Doctors_LicenseNumber'
+    SELECT 1 FROM sys.indexes WHERE name = 'IX_Doctors_LicenseNumber'
 )
 BEGIN
     CREATE NONCLUSTERED INDEX IX_Doctors_LicenseNumber
@@ -83,8 +103,17 @@ BEGIN
 END
 GO
 
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes WHERE name = 'IX_Users_Email'
+)
+BEGIN
+    CREATE NONCLUSTERED INDEX IX_Users_Email
+    ON Users(Email);
+END
+GO
+
 -- =============================================
--- 🟢 STORED PROCEDURE: GET ALL (SEARCH + FILTER)
+-- STORED PROCEDURE: GET ALL DOCTORS
 -- =============================================
 CREATE OR ALTER PROCEDURE GetAllDoctors
     @Search NVARCHAR(100) = NULL,
@@ -195,7 +224,7 @@ END
 GO
 
 -- =============================================
--- STORED PROCEDURE: SOFT DELETE
+-- STORED PROCEDURE: DELETE DOCTOR (SOFT)
 -- =============================================
 CREATE OR ALTER PROCEDURE DeleteDoctor
     @Id INT
@@ -226,11 +255,34 @@ END
 GO
 
 -- =============================================
--- SEED DATA (SAFE)
+-- STORED PROCEDURE: GET EXPIRED DOCTORS
+-- =============================================
+CREATE OR ALTER PROCEDURE GetExpiredDoctors
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT 
+        Id,
+        FullName,
+        Email,
+        Specialization,
+        LicenseNumber,
+        LicenseExpiryDate,
+        'Expired' AS Status,
+        CreatedDate
+    FROM Doctors
+    WHERE IsDeleted = 0
+    AND LicenseExpiryDate < CAST(GETDATE() AS DATE)
+END
+GO
+
+-- =============================================
+-- SEED DOCTORS
 -- =============================================
 IF NOT EXISTS (SELECT 1 FROM Doctors)
 BEGIN
-    PRINT 'Inserting sample data...';
+    PRINT 'Inserting sample doctors...';
 
     INSERT INTO Doctors (FullName, Email, Specialization, LicenseNumber, LicenseExpiryDate, Status)
     VALUES
@@ -239,4 +291,16 @@ BEGIN
 END
 GO
 
-PRINT ' Database setup completed successfully!';
+-- =============================================
+-- SEED USERS
+-- =============================================
+IF NOT EXISTS (SELECT 1 FROM Users WHERE Email = 'admin@test.com')
+BEGIN
+    PRINT 'Inserting default admin user...';
+
+    INSERT INTO Users (Email, Password, Role)
+    VALUES ('admin@test.com', '123', 'Admin');
+END
+GO
+
+PRINT ' DATABASE SETUP COMPLETED SUCCESSFULLY!';

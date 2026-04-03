@@ -1,59 +1,108 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using DoctorLicenseManagement.Application.Interfaces;
 using DoctorLicenseManagement.Application.Services;
 using DoctorLicenseManagement.API.Middleware;
 using DoctorLicenseManagement.API.Database;
 using DoctorLicenseManagement.Infrastructure.Data;
+using DoctorLicenseManagement.Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services
+// =============================================
+// ADD SERVICES
+// =============================================
 builder.Services.AddControllers();
 
+// APPLICATION SERVICES
+builder.Services.AddScoped<IDoctorService, DoctorService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+// INFRASTRUCTURE SERVICES
+builder.Services.AddScoped<IDbConnectionFactory, DbConnectionFactory>();
+builder.Services.AddScoped<IJwtService, JwtService>();
+
+// =============================================
+// JWT AUTHENTICATION
+// =============================================
+var jwtKey = builder.Configuration["Jwt:Key"];
+
+if (string.IsNullOrWhiteSpace(jwtKey))
+{
+    throw new Exception("JWT Key is missing in configuration");
+}
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.RequireHttpsMetadata = false;
+        options.SaveToken = true;
+
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(jwtKey)
+            )
+        };
+    });
+
+// =============================================
+// VALIDATION RESPONSE
+// =============================================
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
     options.InvalidModelStateResponseFactory = context =>
     {
-        // Extract all validation errors safely
-        var errorList = context.ModelState
-            .Where(entry => entry.Value?.Errors?.Count > 0)
-            .SelectMany(entry => entry.Value!.Errors.Select(error => new
+        var errors = context.ModelState
+            .Where(e => e.Value?.Errors.Count > 0)
+            .SelectMany(e => e.Value!.Errors.Select(err => new
             {
-                Field = entry.Key,
-                Message = string.IsNullOrWhiteSpace(error.ErrorMessage)
+                field = e.Key,
+                message = string.IsNullOrWhiteSpace(err.ErrorMessage)
                     ? "Invalid input format"
-                    : error.ErrorMessage
+                    : err.ErrorMessage
             }))
             .ToList();
-
-        // Optional: first error message (for simple UI)
-        var firstErrorMessage = errorList.FirstOrDefault()?.Message ?? "Invalid request";
 
         return new BadRequestObjectResult(new
         {
             success = false,
-            message = firstErrorMessage,
-            errors = errorList 
+            message = errors.FirstOrDefault()?.message ?? "Validation failed",
+            errors
         });
     };
 });
 
-// Dependency Injection
-builder.Services.AddScoped<IDoctorService, DoctorService>();
-builder.Services.AddScoped<IDbConnectionFactory, DbConnectionFactory>();
-
 var app = builder.Build();
 
-// Middleware
+// =============================================
+// DATABASE INITIALIZATION
+// =============================================
+using (var scope = app.Services.CreateScope())
+{
+    var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+    var initializer = new DatabaseInitializer(config);
+    await initializer.InitializeAsync();
+}
+
+// =============================================
+// MIDDLEWARE PIPELINE
+// =============================================
 app.UseMiddleware<ExceptionMiddleware>();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
-// Database Initializer
-var initializer = new DatabaseInitializer(builder.Configuration);
-await initializer.InitializeAsync();
 
 app.Run();
