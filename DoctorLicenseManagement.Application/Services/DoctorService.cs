@@ -224,14 +224,20 @@ public class DoctorService : IDoctorService
 
     private static void ValidateStatus(string status)
     {
-        var allowed = new[] { "Active", "Suspended" };
+        if (string.IsNullOrWhiteSpace(status))
+            throw new ArgumentException("Status is required");
 
-        if (!allowed.Contains(status, StringComparer.OrdinalIgnoreCase))
+        var allowedStatuses = new[] { "Active", "Suspended" };
+
+        if (!allowedStatuses.Contains(status, StringComparer.OrdinalIgnoreCase))
             throw new ArgumentException("Invalid status value");
     }
 
     private static string NormalizeStatus(string status)
     {
+        if (string.IsNullOrWhiteSpace(status))
+            throw new ArgumentException("Status is required");
+
         return char.ToUpper(status[0]) + status.Substring(1).ToLower();
     }
 

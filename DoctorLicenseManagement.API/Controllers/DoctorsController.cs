@@ -21,13 +21,22 @@ public class DoctorsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> AddDoctor([FromBody] CreateDoctorDto dto)
     {
-        var result = await _doctorService.AddDoctorAsync(dto);
+        if (dto == null)
+        {
+            return BadRequest(new
+            {
+                success = false,
+                message = "Request body is required"
+            });
+        }
 
-        return Created("", new
+        var id = await _doctorService.AddDoctorAsync(dto);
+
+        return CreatedAtAction(nameof(GetById), new { id }, new
         {
             success = true,
             message = "Doctor added successfully",
-            data = result
+            data = id
         });
     }
 
@@ -41,6 +50,15 @@ public class DoctorsController : ControllerBase
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10)
     {
+        if (pageNumber <= 0 || pageSize <= 0)
+        {
+            return BadRequest(new
+            {
+                success = false,
+                message = "Invalid pagination values"
+            });
+        }
+
         var result = await _doctorService.GetAllDoctorsAsync(
             search,
             status,
@@ -63,6 +81,7 @@ public class DoctorsController : ControllerBase
             message = "Doctors fetched successfully",
             pageNumber,
             pageSize,
+            count = result.Count,
             data = result
         });
     }
@@ -73,6 +92,15 @@ public class DoctorsController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
+        if (id <= 0)
+        {
+            return BadRequest(new
+            {
+                success = false,
+                message = "Invalid doctor ID"
+            });
+        }
+
         var result = await _doctorService.GetDoctorByIdAsync(id);
 
         if (result == null)
@@ -98,13 +126,39 @@ public class DoctorsController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateDoctorDto dto)
     {
+        if (id <= 0)
+        {
+            return BadRequest(new
+            {
+                success = false,
+                message = "Invalid doctor ID"
+            });
+        }
+
+        if (dto == null)
+        {
+            return BadRequest(new
+            {
+                success = false,
+                message = "Request body is required"
+            });
+        }
+
         var result = await _doctorService.UpdateDoctorAsync(id, dto);
+
+        if (!result)
+        {
+            return NotFound(new
+            {
+                success = false,
+                message = "Doctor not found"
+            });
+        }
 
         return Ok(new
         {
             success = true,
-            message = "Doctor updated successfully",
-            data = result
+            message = "Doctor updated successfully"
         });
     }
 
@@ -114,13 +168,39 @@ public class DoctorsController : ControllerBase
     [HttpPatch("{id}/status")]
     public async Task<IActionResult> UpdateStatus(int id, [FromBody] string status)
     {
+        if (id <= 0)
+        {
+            return BadRequest(new
+            {
+                success = false,
+                message = "Invalid doctor ID"
+            });
+        }
+
+        if (string.IsNullOrWhiteSpace(status))
+        {
+            return BadRequest(new
+            {
+                success = false,
+                message = "Status is required"
+            });
+        }
+
         var result = await _doctorService.UpdateStatusAsync(id, status);
+
+        if (!result)
+        {
+            return NotFound(new
+            {
+                success = false,
+                message = "Doctor not found"
+            });
+        }
 
         return Ok(new
         {
             success = true,
-            message = "Doctor status updated successfully",
-            data = result
+            message = "Doctor status updated successfully"
         });
     }
 
@@ -130,6 +210,15 @@ public class DoctorsController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
+        if (id <= 0)
+        {
+            return BadRequest(new
+            {
+                success = false,
+                message = "Invalid doctor ID"
+            });
+        }
+
         var result = await _doctorService.DeleteDoctorAsync(id);
 
         if (!result)

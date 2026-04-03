@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "cNxTDF4g/M0=",
+  "dgSpecHash": "kBwlQeOyJYM=",
   "success": true,
-  "projectFilePath": "D:\\Doctor License Management\\DoctorLicenseManagement.API\\DoctorLicenseManagement.API.csproj",
+  "projectFilePath": "D:\\Doctor License Management\\DoctorlicenseManagement.API\\DoctorLicenseManagement.API.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Lenovo\\.nuget\\packages\\dapper\\2.1.72\\dapper.2.1.72.nupkg.sha512",
     "C:\\Users\\Lenovo\\.nuget\\packages\\fluentvalidation\\11.11.0\\fluentvalidation.11.11.0.nupkg.sha512",
