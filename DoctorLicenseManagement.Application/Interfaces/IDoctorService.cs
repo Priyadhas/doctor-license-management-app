@@ -28,4 +28,11 @@ public interface IDoctorService
     
     // Soft delete a doctor
     Task<bool> DeleteDoctorAsync(int id);
+
+    // Get expired doctors
+    Task<IEnumerable<DoctorDto>> GetExpiredDoctorsAsync();
+
+    //Get Doctor Summary
+    Task<DoctorSummaryDto> GetDoctorSummaryAsync();
+
 }

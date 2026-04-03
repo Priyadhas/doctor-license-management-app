@@ -1,9 +1,11 @@
 using DoctorLicenseManagement.Application.DTOs;
 using DoctorLicenseManagement.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DoctorLicenseManagement.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class DoctorsController : ControllerBase
@@ -236,4 +238,37 @@ public class DoctorsController : ControllerBase
             message = "Doctor deleted successfully"
         });
     }
+
+    // ============================
+    // EXPIRED DOCTORS
+    // ============================
+
+    [HttpGet("expired")]
+    public async Task<IActionResult> GetExpiredDoctors()
+    {
+        var result = await _doctorService.GetExpiredDoctorsAsync();
+
+        return Ok(new
+        {
+            success = true,
+            data = result
+        });
+    }
+
+    // ============================
+    // DOCTORS SUMMARY
+    // ============================
+
+    [HttpGet("summary")]
+    public async Task<IActionResult> GetSummary()
+    {
+        var result = await _doctorService.GetDoctorSummaryAsync();
+
+        return Ok(new
+        {
+            success = true,
+            data = result
+        });
+    }
+
 }

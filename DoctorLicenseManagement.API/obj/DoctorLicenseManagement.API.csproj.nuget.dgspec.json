@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Doctor License Management\\DoctorlicenseManagement.API\\DoctorLicenseManagement.API.csproj": {}
+    "D:\\Doctor License Management\\DoctorLicenseManagement.API\\DoctorLicenseManagement.API.csproj": {}
   },
   "projects": {
-    "D:\\Doctor License Management\\DoctorlicenseManagement.API\\DoctorLicenseManagement.API.csproj": {
+    "D:\\Doctor License Management\\DoctorLicenseManagement.API\\DoctorLicenseManagement.API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Doctor License Management\\DoctorlicenseManagement.API\\DoctorLicenseManagement.API.csproj",
+        "projectUniqueName": "D:\\Doctor License Management\\DoctorLicenseManagement.API\\DoctorLicenseManagement.API.csproj",
         "projectName": "DoctorLicenseManagement.API",
-        "projectPath": "D:\\Doctor License Management\\DoctorlicenseManagement.API\\DoctorLicenseManagement.API.csproj",
+        "projectPath": "D:\\Doctor License Management\\DoctorLicenseManagement.API\\DoctorLicenseManagement.API.csproj",
         "packagesPath": "C:\\Users\\Lenovo\\.nuget\\packages\\",
-        "outputPath": "D:\\Doctor License Management\\DoctorlicenseManagement.API\\obj\\",
+        "outputPath": "D:\\Doctor License Management\\DoctorLicenseManagement.API\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Lenovo\\AppData\\Roaming\\NuGet\\NuGet.Config"

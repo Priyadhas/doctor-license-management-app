@@ -195,6 +195,54 @@ public class DoctorService : IDoctorService
     }
 
     // ============================
+    // DOCTOR SUMMARY
+    // ============================
+    public async Task<DoctorSummaryDto> GetDoctorSummaryAsync()
+    {
+        using var connection = _factory.CreateConnection();
+
+        var query = @"
+            SELECT 
+                COUNT(*) AS TotalDoctors,
+
+                SUM(CASE 
+                    WHEN LicenseExpiryDate < CAST(GETDATE() AS DATE) THEN 1 
+                    ELSE 0 
+                END) AS ExpiredDoctors,
+
+                SUM(CASE 
+                    WHEN LicenseExpiryDate >= CAST(GETDATE() AS DATE) 
+                        AND Status = 'Active' THEN 1 
+                    ELSE 0 
+                END) AS ActiveDoctors
+
+            FROM Doctors
+            WHERE IsDeleted = 0;
+        ";
+
+        return await connection.QueryFirstAsync<DoctorSummaryDto>(query);
+    }
+
+    // ============================
+    // EXPIRED DOCTORS
+    // ============================
+
+    public async Task<IEnumerable<DoctorDto>> GetExpiredDoctorsAsync()
+    {
+        using var connection = _factory.CreateConnection();
+
+        var query = @"
+            SELECT *
+            FROM Doctors
+            WHERE IsDeleted = 0
+            AND LicenseExpiryDate < CAST(GETDATE() AS DATE)
+            ORDER BY LicenseExpiryDate ASC
+        ";
+
+        return await connection.QueryAsync<DoctorDto>(query);
+    }
+
+    // ============================
     // PRIVATE HELPERS
     // ============================
 

@@ -18,11 +18,19 @@ public class JwtService : IJwtService
 
     public string GenerateToken(string email)
     {
-        var key = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(_config["Jwt:Key"])
+        
+        var key = _config["Jwt:Key"];
+
+        if (string.IsNullOrEmpty(key))
+        {
+            throw new Exception("JWT Key is missing in configuration");
+        }
+
+        var securityKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(key)
         );
 
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        var creds = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
         var claims = new[]
         {

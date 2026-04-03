@@ -299,7 +299,7 @@ BEGIN
     PRINT 'Inserting default admin user...';
 
     INSERT INTO Users (Email, Password, Role)
-    VALUES ('admin@test.com', '123', 'Admin');
+    VALUES ('admin@test.com', 'Admin@963', 'Admin');
 END
 GO
 
