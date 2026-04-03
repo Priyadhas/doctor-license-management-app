@@ -9,7 +9,6 @@ D:\Doctor License Management\DoctorlicenseManagement.API\obj\Debug\net8.0\Doctor
 D:\Doctor License Management\DoctorlicenseManagement.API\bin\Debug\net8.0\appsettings.Development.json
 D:\Doctor License Management\DoctorlicenseManagement.API\bin\Debug\net8.0\appsettings.json
 D:\Doctor License Management\DoctorlicenseManagement.API\bin\Debug\net8.0\DoctorLicenseManagement.API.exe
-D:\Doctor License Management\DoctorlicenseManagement.API\bin\Debug\net8.0\Database\setup.sql
 D:\Doctor License Management\DoctorlicenseManagement.API\bin\Debug\net8.0\DoctorLicenseManagement.API.deps.json
 D:\Doctor License Management\DoctorlicenseManagement.API\bin\Debug\net8.0\DoctorLicenseManagement.API.runtimeconfig.json
 D:\Doctor License Management\DoctorlicenseManagement.API\bin\Debug\net8.0\DoctorLicenseManagement.API.dll
@@ -82,3 +81,4 @@ D:\Doctor License Management\DoctorlicenseManagement.API\obj\Debug\net8.0\refint
 D:\Doctor License Management\DoctorlicenseManagement.API\obj\Debug\net8.0\DoctorLicenseManagement.API.pdb
 D:\Doctor License Management\DoctorlicenseManagement.API\obj\Debug\net8.0\DoctorLicenseManagement.API.genruntimeconfig.cache
 D:\Doctor License Management\DoctorlicenseManagement.API\obj\Debug\net8.0\ref\DoctorLicenseManagement.API.dll
+D:\Doctor License Management\DoctorLicenseManagement.API\bin\Debug\net8.0\setup.sql

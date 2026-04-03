@@ -1,19 +1,35 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <!-- ============================
+       PROJECT CONFIGURATION
+       ============================ -->
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <!-- ============================
+       PACKAGE DEPENDENCIES
+       ============================ -->
   <ItemGroup>
     <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.5" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.5" />
   </ItemGroup>
 
+  <!-- ============================
+       PROJECT REFERENCES
+       ============================ -->
   <ItemGroup>
     <ProjectReference Include="..\DoctorLicenseManagement.Application\DoctorLicenseManagement.Application.csproj" />
+  </ItemGroup>
+
+  <!-- ============================
+       EMBEDDED SQL SCRIPTS
+       ============================ -->
+  <ItemGroup>
+    <EmbeddedResource Include="Data\Scripts\setup.sql" />
   </ItemGroup>
 
 </Project>

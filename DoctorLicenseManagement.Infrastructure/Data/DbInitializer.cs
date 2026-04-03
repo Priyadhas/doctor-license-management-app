@@ -1,8 +1,9 @@
 using Microsoft.Data.SqlClient;
-using System.Text.RegularExpressions;
+using Microsoft.Extensions.Configuration;
 using Dapper;
+using System.Reflection;
 
-namespace DoctorLicenseManagement.API.Database;
+namespace DoctorLicenseManagement.Infrastructure.Data;
 
 public class DatabaseInitializer
 {
@@ -20,10 +21,7 @@ public class DatabaseInitializer
         var connectionString = _configuration.GetConnectionString("DefaultConnection");
 
         if (string.IsNullOrWhiteSpace(connectionString))
-        {
-            Console.WriteLine("Connection string is missing");
-            return;
-        }
+            throw new Exception("Connection string is missing");
 
         // ============================
         // CREATE DATABASE IF NOT EXISTS
@@ -47,51 +45,49 @@ public class DatabaseInitializer
         }
 
         // ============================
-        // RUN setup.sql ON DoctorDB
+        // RUN setup.sql FROM EMBEDDED RESOURCE
         // ============================
 
         using var connection = new SqlConnection(connectionString);
         await connection.OpenAsync();
 
-        var sqlFilePath = Path.Combine(
-            Directory.GetCurrentDirectory(),
-            "Database",
-            "setup.sql"
-        );
+        var assembly = Assembly.GetExecutingAssembly();
 
-        if (!File.Exists(sqlFilePath))
+        var resourceName = "DoctorLicenseManagement.Infrastructure.Data.Scripts.setup.sql";
+
+        Console.WriteLine($"Loading SQL script: {resourceName}");
+
+        using var stream = assembly.GetManifestResourceStream(resourceName);
+
+        if (stream == null)
+            throw new Exception($"Embedded SQL not found: {resourceName}");
+
+        using var reader = new StreamReader(stream);
+        var script = await reader.ReadToEndAsync();
+
+        if (string.IsNullOrWhiteSpace(script))
+            throw new Exception("setup.sql is empty");
+
+        // ============================
+        // EXECUTE SCRIPT (SAFE + IDEMPOTENT)
+        // ============================
+
+        var commands = script
+            .Split("GO", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        foreach (var command in commands)
         {
-            Console.WriteLine("setup.sql file not found");
-            return;
-        }
-
-        var script = await File.ReadAllTextAsync(sqlFilePath);
-
-        // Split script by GO
-        var commands = Regex.Split(
-            script,
-            @"^\s*GO\s*$",
-            RegexOptions.Multiline | RegexOptions.IgnoreCase
-        );
-
-        foreach (var commandText in commands)
-        {
-            var trimmedCommand = commandText.Trim();
-
-            if (string.IsNullOrWhiteSpace(trimmedCommand))
+            if (string.IsNullOrWhiteSpace(command))
                 continue;
-
-            using var command = new SqlCommand(trimmedCommand, connection);
 
             try
             {
-                await command.ExecuteNonQueryAsync();
+                await connection.ExecuteAsync(command);
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error executing SQL block:");
-                Console.WriteLine(trimmedCommand);
-                Console.WriteLine($"Error: {ex.Message}");
+                Console.WriteLine("SQL execution warning:");
+                Console.WriteLine(ex.Message);
             }
         }
 
