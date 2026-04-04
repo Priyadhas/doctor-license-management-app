@@ -7,7 +7,9 @@ import { z } from "zod";
 import toast from "react-hot-toast";
 import { api } from "@/src/services/api";
 
+// ============================
 // VALIDATION
+// ============================
 const schema = z.object({
   fullName: z.string().trim().min(3, "Name must be at least 3 characters"),
 
@@ -48,7 +50,9 @@ export default function AddDoctorModal({ open, onClose }) {
 
   const [errors, setErrors] = useState({});
 
-  // MUTATION (WITH TOAST)
+  // ============================
+  // MUTATION (FIXED)
+  // ============================
   const mutation = useMutation({
     mutationFn: api.createDoctor,
 
@@ -68,16 +72,28 @@ export default function AddDoctorModal({ open, onClose }) {
     },
 
     onError: (error) => {
-      toast.error(
-        error?.response?.data?.message ||
-          error?.message ||
-          "Failed to add doctor",
-        { icon: null }
-      );
+      const message = error?.message || "Failed to add doctor";
+
+      // 🎯 FIELD LEVEL ERROR (BEST UX)
+      if (message.toLowerCase().includes("license")) {
+        setErrors((prev) => ({
+          ...prev,
+          licenseNumber: message,
+        }));
+
+        // focus license field
+        document.querySelector('[name="licenseNumber"]')?.focus();
+        return;
+      }
+
+      // fallback toast
+      toast.error(message, { icon: null });
     },
   });
 
-  // HANDLE CHANGE
+  // ============================
+  // HANDLE INPUT
+  // ============================
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -88,7 +104,9 @@ export default function AddDoctorModal({ open, onClose }) {
     }));
   };
 
+  // ============================
   // SUBMIT
+  // ============================
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -97,7 +115,6 @@ export default function AddDoctorModal({ open, onClose }) {
     if (!result.success) {
       const fieldErrors = {};
 
-      // FIXED: use issues
       result.error.issues.forEach((err) => {
         fieldErrors[err.path[0]] = err.message;
       });
@@ -117,10 +134,14 @@ export default function AddDoctorModal({ open, onClose }) {
       formattedName = "Dr. " + formattedName;
     }
 
-    await mutation.mutateAsync({
-      ...form,
-      fullName: formattedName,
-    });
+    try {
+      await mutation.mutateAsync({
+        ...form,
+        fullName: formattedName,
+      });
+    } catch {
+      // ❌ DO NOTHING (handled in onError)
+    }
   };
 
   if (!open) return null;
@@ -128,7 +149,7 @@ export default function AddDoctorModal({ open, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
       <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl p-6 relative">
-        
+
         {/* CLOSE */}
         <button
           onClick={onClose}
@@ -144,68 +165,40 @@ export default function AddDoctorModal({ open, onClose }) {
         <form onSubmit={handleSubmit} className="space-y-3">
 
           {/* NAME */}
-          <div>
-            <input
-              name="fullName"
-              placeholder="Full Name"
-              value={form.fullName}
-              onChange={handleChange}
-              className={`input w-full ${errors.fullName ? "border-red-500" : ""}`}
-            />
-            {errors.fullName && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.fullName}
-              </p>
-            )}
-          </div>
+          <InputField
+            name="fullName"
+            placeholder="Full Name"
+            value={form.fullName}
+            error={errors.fullName}
+            onChange={handleChange}
+          />
 
           {/* EMAIL */}
-          <div>
-            <input
-              name="email"
-              placeholder="Email"
-              value={form.email}
-              onChange={handleChange}
-              className={`input w-full ${errors.email ? "border-red-500" : ""}`}
-            />
-            {errors.email && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.email}
-              </p>
-            )}
-          </div>
+          <InputField
+            name="email"
+            placeholder="Email"
+            value={form.email}
+            error={errors.email}
+            onChange={handleChange}
+          />
 
           {/* SPECIALIZATION */}
-          <div>
-            <input
-              name="specialization"
-              placeholder="Specialization"
-              value={form.specialization}
-              onChange={handleChange}
-              className={`input w-full ${errors.specialization ? "border-red-500" : ""}`}
-            />
-            {errors.specialization && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.specialization}
-              </p>
-            )}
-          </div>
+          <InputField
+            name="specialization"
+            placeholder="Specialization"
+            value={form.specialization}
+            error={errors.specialization}
+            onChange={handleChange}
+          />
 
           {/* LICENSE */}
-          <div>
-            <input
-              name="licenseNumber"
-              placeholder="License Number"
-              value={form.licenseNumber}
-              onChange={handleChange}
-              className={`input w-full ${errors.licenseNumber ? "border-red-500" : ""}`}
-            />
-            {errors.licenseNumber && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.licenseNumber}
-              </p>
-            )}
-          </div>
+          <InputField
+            name="licenseNumber"
+            placeholder="License Number"
+            value={form.licenseNumber}
+            error={errors.licenseNumber}
+            onChange={handleChange}
+          />
 
           {/* DATE */}
           <div>
@@ -214,7 +207,9 @@ export default function AddDoctorModal({ open, onClose }) {
               name="licenseExpiryDate"
               value={form.licenseExpiryDate}
               onChange={handleChange}
-              className={`input w-full ${errors.licenseExpiryDate ? "border-red-500" : ""}`}
+              className={`input w-full ${
+                errors.licenseExpiryDate ? "border-red-500" : ""
+              }`}
             />
             {errors.licenseExpiryDate && (
               <p className="text-red-500 text-xs mt-1">
@@ -239,13 +234,37 @@ export default function AddDoctorModal({ open, onClose }) {
             type="submit"
             disabled={mutation.isPending}
             className="w-full bg-blue-600 text-white py-2 rounded-lg 
-            hover:bg-blue-700 transition"
+            hover:bg-blue-700 transition disabled:opacity-60"
           >
             {mutation.isPending ? "Adding..." : "Add Doctor"}
           </button>
 
         </form>
       </div>
+    </div>
+  );
+}
+
+// ============================
+// REUSABLE INPUT COMPONENT (PREMIUM)
+// ============================
+function InputField({ name, placeholder, value, error, onChange }) {
+  return (
+    <div>
+      <input
+        name={name}
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        className={`input w-full ${
+          error ? "border-red-500 ring-1 ring-red-200" : ""
+        }`}
+      />
+      {error && (
+        <p className="text-red-500 text-xs mt-1">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

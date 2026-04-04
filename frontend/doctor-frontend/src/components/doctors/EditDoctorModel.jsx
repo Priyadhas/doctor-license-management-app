@@ -124,7 +124,7 @@ export default function EditDoctorModal({ open, onClose, doctor }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-md">
-      {/* BORDER */}
+      {/*  BORDER */}
       <div className="p-[1px] rounded-[18px] bg-gradient-to-br from-blue-400/40 via-white/40 to-blue-300/40">
         {/* CARD */}
         <div

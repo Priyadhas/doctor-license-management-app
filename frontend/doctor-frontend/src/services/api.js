@@ -7,6 +7,7 @@ const BASE_URL = "http://localhost:5278/api";
 // ============================
 const apiClient = axios.create({
   baseURL: BASE_URL,
+  timeout: 10000, // ✅ prevent hanging requests
   headers: {
     "Content-Type": "application/json",
   },
@@ -15,48 +16,59 @@ const apiClient = axios.create({
 // ============================
 // REQUEST INTERCEPTOR (TOKEN)
 // ============================
-apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
+apiClient.interceptors.request.use(
+  (config) => {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("token");
 
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-
-  return config;
-});
-
-// ============================
-// RESPONSE INTERCEPTOR (ERROR HANDLING)
-// ============================
-apiClient.interceptors.response.use(
-  (response) => response.data,
-
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem("token");
-      window.location.href = "/login";
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
 
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// ============================
+// RESPONSE INTERCEPTOR (CLEAN DATA + ERRORS)
+// ============================
+apiClient.interceptors.response.use(
+  (response) => response.data, // ✅ ALWAYS return clean data
+
+  (error) => {
+    // 🔐 Handle unauthorized globally
+    if (error.response?.status === 401) {
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("token");
+        window.location.href = "/login";
+      }
+    }
+
+    // ✅ Extract best possible message
     const message =
-      error.response?.data?.message ||
-      error.response?.data?.title ||
-      "Invalid credentials";
+      error?.response?.data?.message ||
+      error?.response?.data?.title ||
+      error?.response?.data?.errors?.[0] || // ASP.NET validation
+      error?.message ||
+      "Something went wrong";
 
     return Promise.reject(new Error(message));
   }
 );
 
 // ============================
-// API METHODS
+// API METHODS (CONSISTENT)
 // ============================
 export const api = {
   // ============================
-  // LOGIN
+  // AUTH
   // ============================
   login: async (data) => {
     const res = await apiClient.post("/auth/login", data);
 
-    if (res?.token) {
+    if (res?.token && typeof window !== "undefined") {
       localStorage.setItem("token", res.token);
     }
 
@@ -64,15 +76,14 @@ export const api = {
   },
 
   // ============================
-  // DASHBOARD SUMMARY
+  // DASHBOARD
   // ============================
   getSummary: async () => {
-    const res = await apiClient.get("/doctors/summary");
-    return res.data || res;
+    return await apiClient.get("/doctors/summary");
   },
 
   // ============================
-  // GET DOCTORS
+  // DOCTORS LIST
   // ============================
   getDoctors: async ({
     page = 1,
@@ -90,38 +101,31 @@ export const api = {
     });
 
     return {
-      data: res.data || [],
-      totalPages: res.totalPages || 1,
-      totalCount: res.totalCount || 0,
+      data: res.data ?? [],
+      totalPages: res.totalPages ?? 1,
+      totalCount: res.totalCount ?? 0,
     };
   },
 
   // ============================
-  // CREATE DOCTOR
+  // CRUD
   // ============================
   createDoctor: async (data) => {
     return await apiClient.post("/doctors", data);
   },
 
-  // ============================
-  // UPDATE DOCTOR
-  // ============================
   updateDoctor: async (id, data) => {
     return await apiClient.put(`/doctors/${id}`, data);
   },
 
-  // ============================
-  // DELETE DOCTOR
-  // ============================
   deleteDoctor: async (id) => {
     return await apiClient.delete(`/doctors/${id}`);
   },
 
   // ============================
-  // RECENT ACTIVITY
+  // ACTIVITY
   // ============================
   getActivity: async () => {
-    const res = await apiClient.get("/doctors/activity");
-    return res.data || [];
+    return await apiClient.get("/doctors/activity");
   },
 };
