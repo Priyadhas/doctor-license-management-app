@@ -7,12 +7,20 @@ import toast from "react-hot-toast";
 import { z } from "zod";
 import { api } from "@/src/services/api";
 
-// VALIDATION
+// WORLD-CLASS VALIDATION
 const schema = z.object({
-  fullName: z.string().min(3, "Name must be at least 3 characters"),
-  email: z.string().email("Invalid email address"),
-  specialization: z.string().min(2, "Specialization is required"),
+  fullName: z.string().trim().min(3, "Name must be at least 3 characters"),
+
+  email: z
+    .string()
+    .trim()
+    .min(1, "Email is required")
+    .email("Enter a valid email address"),
+
+  specialization: z.string().trim().min(2, "Specialization is required"),
+
   licenseExpiryDate: z.string().min(1, "Expiry date is required"),
+
   status: z.string(),
 });
 
@@ -27,45 +35,80 @@ export default function EditDoctorModal({ open, onClose, doctor }) {
     status: "Active",
   });
 
+  const [errors, setErrors] = useState({});
+
   // SAFE PREFILL (NO WARNING)
   useEffect(() => {
     if (!open || !doctor) return;
 
-    setForm({
-      fullName: doctor.fullName ?? "",
-      email: doctor.email ?? "",
-      specialization: doctor.specialization ?? "",
-      licenseExpiryDate: doctor.licenseExpiryDate
-        ? doctor.licenseExpiryDate.split("T")[0]
-        : "",
-      status: doctor.status ?? "Active",
-    });
+    // FIX: wrap inside microtask (prevents React warning)
+    Promise.resolve().then(() => {
+      setForm({
+        fullName: doctor.fullName ?? "",
+        email: doctor.email ?? "",
+        specialization: doctor.specialization ?? "",
+        licenseExpiryDate: doctor.licenseExpiryDate
+          ? doctor.licenseExpiryDate.split("T")[0]
+          : "",
+        status: doctor.status ?? "Active",
+      });
 
+      setErrors({});
+    });
   }, [doctor, open]);
 
-  // 🔥 MUTATION
+  // MUTATION
   const mutation = useMutation({
     mutationFn: (data) => api.updateDoctor(doctor.id, data),
 
     onSuccess: () => {
-      toast.success("Doctor updated successfully");
+      toast.success("Doctor updated successfully", {
+        icon: null,
+      });
+
       queryClient.invalidateQueries(["doctors"]);
       onClose();
     },
 
     onError: (err) => {
-      toast.error(err.message || "Update failed");
+      toast.error(
+        err?.response?.data?.message || err?.message || "Update failed",
+        { icon: null },
+      );
     },
   });
 
-  // SUBMIT
+  // INPUT CHANGE
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+
+    // clear error while typing
+    setErrors((prev) => ({
+      ...prev,
+      [e.target.name]: "",
+    }));
+  };
+
+  // SUBMIT (WORLD-CLASS)
   const handleSubmit = (e) => {
     e.preventDefault();
 
     const result = schema.safeParse(form);
 
     if (!result.success) {
-      toast.error(result.error.errors[0].message);
+      const fieldErrors = {};
+
+      // FIXED: issues instead of errors
+      result.error.issues.forEach((err) => {
+        fieldErrors[err.path[0]] = err.message;
+      });
+
+      setErrors(fieldErrors);
+
+      // focus first error
+      const firstError = Object.keys(fieldErrors)[0];
+      document.querySelector(`[name="${firstError}"]`)?.focus();
+
       return;
     }
 
@@ -80,81 +123,114 @@ export default function EditDoctorModal({ open, onClose, doctor }) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-
-      <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl p-6 relative">
-
-        {/* CLOSE */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-black"
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-md">
+      {/* BORDER */}
+      <div className="p-[1px] rounded-[18px] bg-gradient-to-br from-blue-400/40 via-white/40 to-blue-300/40">
+        {/* CARD */}
+        <div
+          className="
+          w-[300px]
+          max-h-[72vh] overflow-y-auto
+          bg-white/85 backdrop-blur-xl
+          rounded-[16px]
+          px-4 py-4
+          shadow-[0_10px_30px_rgba(0,0,0,0.2)]
+        "
         >
-          <X size={18} />
-        </button>
+          {/* HEADER */}
+          <div className="flex justify-between items-center mb-2">
+            <h2 className="text-base font-semibold">Edit Doctor</h2>
 
-        <h2 className="text-lg font-semibold mb-5">
-          Edit Doctor
-        </h2>
+            <button
+              onClick={() => onClose?.()}
+              className="text-gray-400 hover:text-black"
+            >
+              <X size={16} />
+            </button>
+          </div>
 
-        <form onSubmit={handleSubmit} className="space-y-3">
+          {/* FORM */}
+          <form onSubmit={handleSubmit} className="space-y-2">
+            {["fullName", "email", "specialization"].map((field) => (
+              <div key={field}>
+                <input
+                  name={field}
+                  value={form[field]}
+                  onChange={handleChange}
+                  placeholder={
+                    field === "fullName"
+                      ? "Full Name"
+                      : field === "email"
+                        ? "Email"
+                        : "Specialization"
+                  }
+                  className={`
+                    w-full px-3 py-2 rounded-lg text-sm
+                    bg-white/70 border
+                    ${errors[field] ? "border-red-500" : "border-gray-200"}
+                    focus:ring-2 focus:ring-blue-500
+                    outline-none
+                  `}
+                />
 
-          <input
-            value={form.fullName}
-            onChange={(e) =>
-              setForm({ ...form, fullName: e.target.value })
-            }
-            className="input"
-            placeholder="Full Name"
-          />
+                {errors[field] && (
+                  <p className="text-red-500 text-[11px] mt-1">
+                    {errors[field]}
+                  </p>
+                )}
+              </div>
+            ))}
 
-          <input
-            value={form.email}
-            onChange={(e) =>
-              setForm({ ...form, email: e.target.value })
-            }
-            className="input"
-            placeholder="Email"
-          />
+            {/* DATE */}
+            <div>
+              <input
+                type="date"
+                name="licenseExpiryDate"
+                value={form.licenseExpiryDate}
+                onChange={handleChange}
+                className={`
+                  w-full px-3 py-2 rounded-lg text-sm
+                  border
+                  ${errors.licenseExpiryDate ? "border-red-500" : "border-gray-200"}
+                `}
+              />
 
-          <input
-            value={form.specialization}
-            onChange={(e) =>
-              setForm({ ...form, specialization: e.target.value })
-            }
-            className="input"
-            placeholder="Specialization"
-          />
+              {errors.licenseExpiryDate && (
+                <p className="text-red-500 text-[11px] mt-1">
+                  {errors.licenseExpiryDate}
+                </p>
+              )}
+            </div>
 
-          <input
-            type="date"
-            value={form.licenseExpiryDate}
-            onChange={(e) =>
-              setForm({ ...form, licenseExpiryDate: e.target.value })
-            }
-            className="input"
-          />
+            {/* STATUS */}
+            <select
+              name="status"
+              value={form.status}
+              onChange={handleChange}
+              className="w-full px-3 py-2 rounded-lg text-sm border border-gray-200"
+            >
+              <option value="Active">Active</option>
+              <option value="Suspended">Suspended</option>
+            </select>
 
-          <select
-            value={form.status}
-            onChange={(e) =>
-              setForm({ ...form, status: e.target.value })
-            }
-            className="input"
-          >
-            <option value="Active">Active</option>
-            <option value="Suspended">Suspended</option>
-          </select>
-
-          <button
-            type="submit"
-            disabled={mutation.isPending}
-            className="w-full bg-blue-600 text-white py-2.5 rounded-lg 
-            hover:bg-blue-700 transition disabled:opacity-60"
-          >
-            {mutation.isPending ? "Updating..." : "Update Doctor"}
-          </button>
-
-        </form>
+            {/* BUTTON */}
+            <button
+              type="submit"
+              disabled={mutation.isPending}
+              className="
+                w-full py-2 rounded-lg
+                bg-gradient-to-r from-blue-600 to-blue-400
+                text-white text-sm font-medium
+                shadow-md
+                hover:shadow-lg hover:scale-[1.02]
+                active:scale-[0.97]
+                transition-all
+              "
+            >
+              {mutation.isPending ? "Updating..." : "Update Doctor"}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );
