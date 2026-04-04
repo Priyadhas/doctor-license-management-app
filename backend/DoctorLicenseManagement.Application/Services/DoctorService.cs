@@ -144,7 +144,12 @@ public class DoctorService : IDoctorService
 
         using var connection = _factory.CreateConnection();
 
-        // 🔍 CHECK DUPLICATE LICENSE
+        // ADD "Dr." PREFIX
+        dto.FullName = dto.FullName.StartsWith("Dr.", StringComparison.OrdinalIgnoreCase)
+            ? dto.FullName.Trim()
+            : $"Dr. {dto.FullName.Trim()}";
+
+        // CHECK DUPLICATE LICENSE
         var exists = await connection.ExecuteScalarAsync<int>(
             "SELECT COUNT(1) FROM Doctors WHERE LicenseNumber = @LicenseNumber",
             new { dto.LicenseNumber }
@@ -153,7 +158,7 @@ public class DoctorService : IDoctorService
         if (exists > 0)
             throw new InvalidOperationException("License number already exists");
 
-        // AUTO STATUS LOGIC
+        // AUTO STATUS LOGIC (BASED ON EXPIRY)
         string status;
 
         if (dto.LicenseExpiryDate.HasValue &&
@@ -166,9 +171,10 @@ public class DoctorService : IDoctorService
             status = NormalizeStatus(dto.Status);
         }
 
+        // PARAMETERS
         var parameters = new
         {
-            dto.FullName,
+            FullName = dto.FullName,
             dto.Email,
             dto.Specialization,
             dto.LicenseNumber,
@@ -176,6 +182,7 @@ public class DoctorService : IDoctorService
             Status = status
         };
 
+        // EXECUTE STORED PROCEDURE
         return await connection.ExecuteScalarAsync<int>(
             "AddDoctor",
             parameters,
@@ -186,7 +193,7 @@ public class DoctorService : IDoctorService
     // ============================
     // UPDATE
     // ============================
-        public async Task<bool> UpdateDoctorAsync(int id, UpdateDoctorDto dto)
+    public async Task<bool> UpdateDoctorAsync(int id, UpdateDoctorDto dto)
     {
         ValidateUpdate(dto);
 
@@ -194,7 +201,12 @@ public class DoctorService : IDoctorService
 
         await EnsureDoctorExists(connection, id);
 
-        // AUTO STATUS LOGIC (IMPORTANT)
+        // ADD "Dr." PREFIX
+        dto.FullName = dto.FullName.StartsWith("Dr.", StringComparison.OrdinalIgnoreCase)
+            ? dto.FullName.Trim()
+            : $"Dr. {dto.FullName.Trim()}";
+
+        // AUTO STATUS LOGIC (BASED ON EXPIRY)
         string status;
 
         if (dto.LicenseExpiryDate.HasValue &&
@@ -207,6 +219,7 @@ public class DoctorService : IDoctorService
             status = NormalizeStatus(dto.Status);
         }
 
+        // UPDATE QUERY
         var result = await connection.ExecuteAsync(@"
             UPDATE Doctors
             SET 
@@ -219,7 +232,7 @@ public class DoctorService : IDoctorService
             new
             {
                 Id = id,
-                dto.FullName,
+                FullName = dto.FullName,
                 dto.Email,
                 dto.Specialization,
                 dto.LicenseExpiryDate,

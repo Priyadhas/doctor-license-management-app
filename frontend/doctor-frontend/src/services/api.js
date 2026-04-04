@@ -1,53 +1,47 @@
 const BASE_URL = "http://localhost:5278/api";
 
-// TOKEN
+// GET TOKEN
 const getToken = () => localStorage.getItem("token");
 
-// HEADERS
-const getHeaders = (isJson = true) => {
-  const headers = {};
-
-  if (isJson) headers["Content-Type"] = "application/json";
-
-  const token = getToken();
-  if (token) headers["Authorization"] = `Bearer ${token}`;
-
-  return headers;
-};
-
-// GLOBAL RESPONSE HANDLER (MOST IMPORTANT)
+// HANDLE RESPONSE (CORE LOGIC)
 const handleResponse = async (res) => {
+  const text = await res.text();
+
   // TOKEN EXPIRED / UNAUTHORIZED
   if (res.status === 401) {
     localStorage.removeItem("token");
-
-    // optional: show message
-    if (typeof window !== "undefined") {
-      alert("Session expired. Please login again.");
-      window.location.href = "/login";
-    }
-
-    throw new Error("Session expired");
+    window.location.href = "/login";
+    throw new Error("Session expired. Please login again.");
   }
 
-  // OTHER ERRORS
+  // ERROR HANDLING (REAL MESSAGE)
   if (!res.ok) {
-    let message = "Something went wrong";
-
     try {
-      const errorData = await res.json();
-      message = errorData.message || message;
-    } catch {
-      // ignore parsing error
-    }
+      const errorData = JSON.parse(text);
 
-    throw new Error(message);
+      // if backend sends structured error
+      throw new Error(
+        errorData.message ||
+        errorData.title ||
+        text ||
+        "Something went wrong"
+      );
+    } catch {
+      throw new Error(text || "Something went wrong");
+    }
   }
 
-  return res.json();
+  // SUCCESS
+  return text ? JSON.parse(text) : {};
 };
 
-// API
+// COMMON HEADERS
+const getHeaders = (isJson = true) => ({
+  ...(isJson && { "Content-Type": "application/json" }),
+  Authorization: `Bearer ${getToken()}`,
+});
+
+// API METHODS
 export const api = {
   // LOGIN
   login: async (data) => {
@@ -82,14 +76,9 @@ export const api = {
     search = "",
     status = "",
   } = {}) => {
-    const query = new URLSearchParams({
-      PageNumber: page,
-      PageSize: pageSize,
-      search,
-      status,
-    }).toString();
+    const query = `?PageNumber=${page}&PageSize=${pageSize}&search=${search}&status=${status}`;
 
-    const res = await fetch(`${BASE_URL}/doctors?${query}`, {
+    const res = await fetch(`${BASE_URL}/doctors${query}`, {
       headers: getHeaders(false),
     });
 
@@ -113,7 +102,7 @@ export const api = {
     return handleResponse(res);
   },
 
-  // ✏️ UPDATE
+  // UPDATE
   updateDoctor: async (id, data) => {
     const res = await fetch(`${BASE_URL}/doctors/${id}`, {
       method: "PUT",

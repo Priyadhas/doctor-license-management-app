@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Sidebar from "@/src/layout/Sidebar";
 import Header from "@/src/layout/Header";
 import DoctorCard from "@/src/components/doctors/DoctorCard";
 import { api } from "@/src/services/api";
 import { Search, Plus } from "lucide-react";
+import AddDoctorModal from "../../components/doctors/AddDoctorModel";
+import toast from "react-hot-toast";
 
 export default function DoctorsPage() {
   const [doctors, setDoctors] = useState([]);
@@ -14,8 +16,10 @@ export default function DoctorsPage() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
 
-  const fetchDoctors = async () => {
+  // STABLE FETCH FUNCTION
+  const fetchDoctors = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -28,24 +32,37 @@ export default function DoctorsPage() {
       setDoctors(res.data || []);
       setTotalPages(res.totalPages || 1);
     } catch (err) {
-      console.error(err);
+      console.error("Fetch error:", err);
+      toast.error("Failed to load doctors");
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchDoctors();
-    const token = localStorage.getItem("token");
-
-  if (!token) {
-    window.location.href = "/login";
-  }
   }, [page, search, status]);
 
-  const handleDelete = async (id) => {
-    await api.deleteDoctor(id);
+  // AUTH CHECK (RUNS ONCE)
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      window.location.href = "/login";
+    }
+  }, []);
+
+  // FETCH DATA (CLEAN)
+  useEffect(() => {
     fetchDoctors();
+  }, [fetchDoctors]);
+
+  // DELETE WITH FEEDBACK
+  const handleDelete = async (id) => {
+    try {
+      await api.deleteDoctor(id);
+      toast.success("Doctor deleted successfully");
+      fetchDoctors();
+    } catch (err) {
+      console.error(err);
+      toast.error("Delete failed");
+    }
   };
 
   return (
@@ -60,7 +77,7 @@ export default function DoctorsPage() {
         {/* MAIN WRAPPER */}
         <div className="w-full max-w-7xl mx-auto flex flex-col flex-1 overflow-hidden">
 
-          {/* PREMIUM TOOLBAR */}
+          {/* TOOLBAR */}
           <div className="bg-white/60 backdrop-blur-2xl border border-white/40 shadow-xl rounded-2xl px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
 
             {/* SEARCH */}
@@ -83,7 +100,7 @@ export default function DoctorsPage() {
               />
             </div>
 
-            {/* FILTER + BUTTON */}
+            {/* FILTER + ADD */}
             <div className="flex items-center gap-3 w-full md:w-auto justify-end">
 
               <select
@@ -101,25 +118,30 @@ export default function DoctorsPage() {
                 <option value="Suspended">Suspended</option>
               </select>
 
-              <button className="flex items-center gap-2 bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400 
-              text-white px-5 py-3 rounded-xl shadow-lg hover:shadow-2xl hover:scale-[1.04] 
-              active:scale-[0.97] transition-all text-sm font-semibold">
+              {/* BUTTON */}
+              <button
+                onClick={() => setOpen(true)}
+                className="flex items-center gap-2 bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400 
+                text-white px-5 py-3 rounded-xl shadow-lg hover:shadow-2xl hover:scale-[1.04] 
+                active:scale-[0.97] transition-all text-sm font-semibold"
+              >
                 <Plus size={18} />
                 Add Doctor
               </button>
+
             </div>
           </div>
 
-          {/* 🔥 MAIN CARD */}
+          {/* MAIN CARD */}
           <div className="flex flex-col flex-1 bg-white/70 backdrop-blur-2xl border border-white/40 rounded-3xl shadow-2xl overflow-hidden">
 
-            {/* 🔥 HEADER ROW */}
+            {/* HEADER */}
             <div className="px-8 py-4 border-b bg-gradient-to-r from-gray-50 to-gray-100 text-xs text-gray-500 flex justify-between font-semibold tracking-wide uppercase">
               <span>Doctor Information</span>
               <span>Status & Actions</span>
             </div>
 
-            {/* 🔥 LIST */}
+            {/* LIST */}
             <div className="flex-1 overflow-y-auto px-8 py-5 space-y-4">
 
               {loading ? (
@@ -130,12 +152,8 @@ export default function DoctorsPage() {
                 </div>
               ) : doctors.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-gray-400">
-                  <p className="text-lg font-semibold">
-                    No doctors found
-                  </p>
-                  <p className="text-sm">
-                    Try adjusting filters or search
-                  </p>
+                  <p className="text-lg font-semibold">No doctors found</p>
+                  <p className="text-sm">Try adjusting filters or search</p>
                 </div>
               ) : (
                 doctors.map((doc) => (
@@ -148,22 +166,15 @@ export default function DoctorsPage() {
               )}
             </div>
 
-            {/* 🔥 PREMIUM PAGINATION */}
+            {/* PAGINATION */}
             <div className="border-t bg-white/50 backdrop-blur-xl px-8 py-4 flex items-center justify-between">
 
-              {/* INFO */}
               <p className="text-xs text-gray-500">
                 Showing page{" "}
-                <span className="font-semibold text-gray-700">
-                  {page}
-                </span>{" "}
-                of{" "}
-                <span className="font-semibold text-gray-700">
-                  {totalPages}
-                </span>
+                <span className="font-semibold text-gray-700">{page}</span> of{" "}
+                <span className="font-semibold text-gray-700">{totalPages}</span>
               </p>
 
-              {/* CONTROLS */}
               <div className="flex items-center gap-2">
 
                 <button
@@ -202,6 +213,12 @@ export default function DoctorsPage() {
           </div>
         </div>
       </div>
+
+      {/* MODAL */}
+      <AddDoctorModal
+        open={open}
+        onClose={() => setOpen(false)}
+      />
     </div>
   );
 }
