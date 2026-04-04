@@ -1,89 +1,78 @@
-import axios from "axios";
-
 const BASE_URL = "http://localhost:5278/api";
 
-// ============================
-// AXIOS INSTANCE
-// ============================
-const apiClient = axios.create({
-  baseURL: BASE_URL,
-  timeout: 10000, // ✅ prevent hanging requests
-  headers: {
-    "Content-Type": "application/json",
-  },
+// GET TOKEN
+const getToken = () => localStorage.getItem("token");
+
+// HANDLE RESPONSE
+const handleResponse = async (res) => {
+  const text = await res.text();
+
+  if (res.status === 401) {
+    localStorage.removeItem("token");
+    window.location.href = "/login";
+    throw new Error("Session expired. Please login again.");
+  }
+
+  if (!res.ok) {
+    try {
+      const errorData = JSON.parse(text);
+
+      throw new Error(
+        errorData.message ||
+        errorData.title ||
+        "Something went wrong"
+      );
+    } catch {
+      throw new Error(text || "Something went wrong");
+    }
+  }
+
+  return text ? JSON.parse(text) : {};
+};
+
+// HEADERS
+const getHeaders = (isJson = true) => ({
+  ...(isJson && { "Content-Type": "application/json" }),
+  Authorization: `Bearer ${getToken()}`,
 });
 
 // ============================
-// REQUEST INTERCEPTOR (TOKEN)
-// ============================
-apiClient.interceptors.request.use(
-  (config) => {
-    if (typeof window !== "undefined") {
-      const token = localStorage.getItem("token");
-
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-    }
-
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-// ============================
-// RESPONSE INTERCEPTOR (CLEAN DATA + ERRORS)
-// ============================
-apiClient.interceptors.response.use(
-  (response) => response.data, // ✅ ALWAYS return clean data
-
-  (error) => {
-    // 🔐 Handle unauthorized globally
-    if (error.response?.status === 401) {
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("token");
-        window.location.href = "/login";
-      }
-    }
-
-    // ✅ Extract best possible message
-    const message =
-      error?.response?.data?.message ||
-      error?.response?.data?.title ||
-      error?.response?.data?.errors?.[0] || // ASP.NET validation
-      error?.message ||
-      "Something went wrong";
-
-    return Promise.reject(new Error(message));
-  }
-);
-
-// ============================
-// API METHODS (CONSISTENT)
+// API METHODS
 // ============================
 export const api = {
-  // ============================
-  // AUTH
-  // ============================
+  // LOGIN
   login: async (data) => {
-    const res = await apiClient.post("/auth/login", data);
+    const res = await fetch(`${BASE_URL}/auth/login`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify(data),
+    });
 
-    if (res?.token && typeof window !== "undefined") {
-      localStorage.setItem("token", res.token);
+    const result = await handleResponse(res);
+
+    if (result.token) {
+      localStorage.setItem("token", result.token);
     }
 
-    return res;
+    return result;
   },
 
   // ============================
-  // DASHBOARD
+  // DASHBOARD SUMMARY
   // ============================
   getSummary: async () => {
-    return await apiClient.get("/doctors/summary");
+    const res = await fetch(`${BASE_URL}/doctors/summary`, {
+      headers: getHeaders(false),
+    });
+
+    const result = await handleResponse(res);
+
+    // normalize response
+    return result?.data ?? result ?? {};
   },
 
   // ============================
-  // DOCTORS LIST
+  // GET DOCTORS
   // ============================
   getDoctors: async ({
     page = 1,
@@ -91,41 +80,71 @@ export const api = {
     search = "",
     status = "",
   } = {}) => {
-    const res = await apiClient.get("/doctors", {
-      params: {
-        PageNumber: page,
-        PageSize: pageSize,
-        search,
-        status,
-      },
+    const query = `?PageNumber=${page}&PageSize=${pageSize}&search=${search}&status=${status}`;
+
+    const res = await fetch(`${BASE_URL}/doctors${query}`, {
+      headers: getHeaders(false),
     });
 
+    const result = await handleResponse(res);
+
     return {
-      data: res.data ?? [],
-      totalPages: res.totalPages ?? 1,
-      totalCount: res.totalCount ?? 0,
+      data: result?.data ?? [],
+      totalPages: result?.totalPages ?? 1,
+      totalCount: result?.totalCount ?? 0,
     };
   },
 
   // ============================
-  // CRUD
+  // CREATE
   // ============================
   createDoctor: async (data) => {
-    return await apiClient.post("/doctors", data);
-  },
+    const res = await fetch(`${BASE_URL}/doctors`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify(data),
+    });
 
-  updateDoctor: async (id, data) => {
-    return await apiClient.put(`/doctors/${id}`, data);
-  },
-
-  deleteDoctor: async (id) => {
-    return await apiClient.delete(`/doctors/${id}`);
+    return handleResponse(res);
   },
 
   // ============================
-  // ACTIVITY
+  // UPDATE
+  // ============================
+  updateDoctor: async (id, data) => {
+    const res = await fetch(`${BASE_URL}/doctors/${id}`, {
+      method: "PUT",
+      headers: getHeaders(),
+      body: JSON.stringify(data),
+    });
+
+    return handleResponse(res);
+  },
+
+  // ============================
+  // DELETE
+  // ============================
+  deleteDoctor: async (id) => {
+    const res = await fetch(`${BASE_URL}/doctors/${id}`, {
+      method: "DELETE",
+      headers: getHeaders(false),
+    });
+
+    return handleResponse(res);
+  },
+
+  // ============================
+  // RECENT ACTIVITY
   // ============================
   getActivity: async () => {
-    return await apiClient.get("/doctors/activity");
+    const res = await fetch(`${BASE_URL}/doctors/activity`, {
+      headers: getHeaders(false),
+    });
+
+    const result = await handleResponse(res);
+
+    return Array.isArray(result)
+      ? result
+      : result?.data ?? [];
   },
 };
