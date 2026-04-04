@@ -312,7 +312,7 @@ public class DoctorService : IDoctorService
         if (string.IsNullOrWhiteSpace(status))
             throw new ArgumentException("Status is required");
 
-        var allowedStatuses = new[] { "Active", "Suspended" };
+        var allowedStatuses = new[] { "Active", "Suspended" ,"Expired"};
 
         if (!allowedStatuses.Contains(status, StringComparer.OrdinalIgnoreCase))
             throw new ArgumentException("Invalid status value");

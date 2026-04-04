@@ -1,5 +1,5 @@
 -- =============================================
--- DATABASE CREATION (SAFE)
+-- DATABASE CREATION
 -- =============================================
 IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'DoctorDB')
 BEGIN
@@ -61,7 +61,7 @@ GO
 -- =============================================
 UPDATE Doctors
 SET Status = 'Active'
-WHERE Status NOT IN ('Active', 'Suspended');
+WHERE Status NOT IN ('Active', 'Suspended','Expired');
 GO
 
 -- =============================================
@@ -74,7 +74,7 @@ IF NOT EXISTS (
 BEGIN
     ALTER TABLE Doctors
     ADD CONSTRAINT CHK_Status
-    CHECK (Status IN ('Active', 'Suspended'));
+    CHECK (Status IN ('Active', 'Suspended','Expired'));
 END
 GO
 

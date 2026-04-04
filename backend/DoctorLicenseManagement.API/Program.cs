@@ -14,6 +14,17 @@ var builder = WebApplication.CreateBuilder(args);
 // ADD SERVICES
 // =============================================
 builder.Services.AddControllers();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:3000")
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials();
+        });
+});
 
 // APPLICATION SERVICES
 builder.Services.AddScoped<IDoctorService, DoctorService>();
@@ -100,6 +111,7 @@ using (var scope = app.Services.CreateScope())
 app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseAuthentication();
+app.UseCors("AllowFrontend");
 app.UseAuthorization();
 
 app.MapControllers();
