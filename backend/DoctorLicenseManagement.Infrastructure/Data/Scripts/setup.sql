@@ -141,9 +141,10 @@ BEGIN
     WHERE IsDeleted = 0
 
     AND (
-        @Search IS NULL OR
-        FullName LIKE '%' + @Search + '%' OR
-        LicenseNumber LIKE '%' + @Search + '%'
+    @Search IS NULL OR
+    LOWER(FullName) LIKE '%' + LOWER(@Search) + '%' OR
+    LOWER(LicenseNumber) LIKE '%' + LOWER(@Search) + '%' OR
+    LOWER(ISNULL(Specialization, '')) LIKE '%' + LOWER(@Search) + '%'
     )
 
     AND (

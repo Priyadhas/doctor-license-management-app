@@ -2,6 +2,7 @@
 
 import { useRouter, usePathname } from "next/navigation";
 import { LayoutDashboard, Stethoscope } from "lucide-react";
+import Image from "next/image";
 
 export default function Sidebar() {
   const router = useRouter();
@@ -22,14 +23,14 @@ export default function Sidebar() {
 
   return (
     <div className="w-64 h-screen fixed left-0 top-0 flex flex-col justify-between px-5 py-6
-    bg-gradient-to-b from-blue-700 via-blue-600 to-blue-500 text-white shadow-xl">
+    bg-gradient-to-b from-blue-700 via-blue-600 to-blue-500 text-white shadow-2xl">
 
       {/* 🔷 TOP */}
       <div>
 
-        {/* 🔥 LOGO / BRAND */}
+        {/* 🔥 BRAND */}
         <div className="flex items-center gap-3 mb-12">
-          <div className="relative w-11 h-11 rounded-xl bg-white/90 flex items-center justify-center shadow-lg">
+          <div className="relative w-11 h-11 rounded-xl bg-white flex items-center justify-center shadow-lg">
 
             {/* Glow */}
             <div className="absolute inset-0 rounded-xl bg-blue-400 blur-xl opacity-20" />
@@ -37,12 +38,12 @@ export default function Sidebar() {
             <Stethoscope className="text-blue-600 relative z-10" size={20} />
           </div>
 
-          <div>
-            <h2 className="text-xl font-semibold tracking-wide leading-tight">
+          <div className="leading-tight">
+            <h2 className="text-lg font-semibold tracking-wide">
               MedCare
             </h2>
             <p className="text-[10px] text-white/70">
-              Doctor System
+              Healthcare Admin
             </p>
           </div>
         </div>
@@ -56,7 +57,7 @@ export default function Sidebar() {
               <div
                 key={item.name}
                 onClick={() => router.push(item.path)}
-                className={`group relative flex items-center gap-3 px-4 py-2.5 rounded-xl cursor-pointer transition-all duration-300
+                className={`relative flex items-center gap-3 px-4 py-2.5 rounded-xl cursor-pointer transition-all duration-300 group
                 ${
                   isActive
                     ? "bg-white/20 backdrop-blur-lg shadow-md"
@@ -64,14 +65,14 @@ export default function Sidebar() {
                 }`}
               >
 
-                {/* LEFT ACTIVE BAR */}
+                {/* ACTIVE LEFT BAR */}
                 {isActive && (
-                  <div className="absolute left-0 top-2 bottom-2 w-1 rounded-r bg-white" />
+                  <div className="absolute left-0 top-2 bottom-2 w-1 bg-white rounded-r" />
                 )}
 
                 {/* ICON */}
                 <div
-                  className={`transition ${
+                  className={`transition-all ${
                     isActive
                       ? "text-white"
                       : "text-white/80 group-hover:text-white"
@@ -82,7 +83,7 @@ export default function Sidebar() {
 
                 {/* TEXT */}
                 <span
-                  className={`text-sm font-medium transition ${
+                  className={`text-sm font-medium transition-all ${
                     isActive
                       ? "text-white"
                       : "text-white/80 group-hover:text-white"
@@ -90,26 +91,42 @@ export default function Sidebar() {
                 >
                   {item.name}
                 </span>
+
+                {/* HOVER GLOW */}
+                <div className="absolute inset-0 rounded-xl bg-white/10 opacity-0 group-hover:opacity-100 transition pointer-events-none" />
               </div>
             );
           })}
         </div>
       </div>
 
-      {/* 🔻 BOTTOM PROFILE */}
+      {/* 🔻 PROFILE */}
       <div className="pt-5 border-t border-white/20">
 
-        <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/10 transition cursor-pointer">
+        <div className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/10 transition cursor-pointer">
 
-          {/* Avatar */}
-          <div className="w-10 h-10 rounded-full bg-white/30 flex items-center justify-center font-semibold shadow">
-            A
+          {/* AVATAR */}
+          <div className="relative">
+            <Image
+              src="/images/doctor.png"
+              alt="Admin"
+              width={36}
+              height={36}
+              className="rounded-full object-cover border border-white/30 shadow-md"
+            />
+
+            {/* ONLINE INDICATOR */}
+            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-400 border-2 border-blue-600 rounded-full" />
           </div>
 
-          {/* Info */}
+          {/* USER INFO */}
           <div className="leading-tight">
-            <p className="text-sm font-medium">Admin</p>
-            <p className="text-xs text-white/70">admin@test.com</p>
+            <p className="text-sm font-medium text-white">
+              Admin
+            </p>
+            <p className="text-[11px] text-white/70">
+              admin@test.com
+            </p>
           </div>
         </div>
 

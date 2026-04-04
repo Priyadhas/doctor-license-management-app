@@ -36,6 +36,11 @@ export default function DoctorsPage() {
 
   useEffect(() => {
     fetchDoctors();
+    const token = localStorage.getItem("token");
+
+  if (!token) {
+    window.location.href = "/login";
+  }
   }, [page, search, status]);
 
   const handleDelete = async (id) => {
@@ -52,22 +57,24 @@ export default function DoctorsPage() {
         {/* HEADER */}
         <Header title="Doctor Management" />
 
-        {/* 🔥 MAIN WRAPPER */}
-        <div className="w-full max-w-6xl mx-auto flex flex-col flex-1 overflow-hidden">
+        {/* MAIN WRAPPER */}
+        <div className="w-full max-w-7xl mx-auto flex flex-col flex-1 overflow-hidden">
 
-          {/* 🔥 FLOATING TOOLBAR */}
-          <div className="bg-white/70 backdrop-blur-2xl border border-white/40 shadow-lg rounded-2xl px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
+          {/* PREMIUM TOOLBAR */}
+          <div className="bg-white/60 backdrop-blur-2xl border border-white/40 shadow-xl rounded-2xl px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
 
             {/* SEARCH */}
-            <div className="relative w-full md:max-w-lg group">
+            <div className="relative w-full md:max-w-xl group">
               <Search
-                size={16}
-                className="absolute left-3 top-3 text-gray-400 group-focus-within:text-blue-500 transition"
+                size={18}
+                className="absolute left-4 top-3 text-gray-400 group-focus-within:text-blue-600 transition"
               />
 
               <input
-                placeholder="Search doctors by name or specialization..."
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 bg-white/80 backdrop-blur-md focus:ring-2 focus:ring-blue-500 focus:border-blue-400 outline-none transition-all text-sm shadow-sm"
+                placeholder="Search doctors by name, specialization..."
+                className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 bg-white/80 backdrop-blur-md 
+                focus:ring-2 focus:ring-blue-500 focus:border-blue-400 outline-none 
+                transition-all text-sm shadow-sm hover:shadow-md"
                 value={search}
                 onChange={(e) => {
                   setPage(1);
@@ -80,7 +87,8 @@ export default function DoctorsPage() {
             <div className="flex items-center gap-3 w-full md:w-auto justify-end">
 
               <select
-                className="px-4 py-2.5 rounded-xl border border-gray-200 bg-white/80 backdrop-blur-md text-sm focus:ring-2 focus:ring-blue-500 outline-none transition shadow-sm"
+                className="px-4 py-3 rounded-xl border border-gray-200 bg-white/80 backdrop-blur-md text-sm 
+                focus:ring-2 focus:ring-blue-500 outline-none transition shadow-sm hover:shadow-md"
                 value={status}
                 onChange={(e) => {
                   setPage(1);
@@ -90,33 +98,35 @@ export default function DoctorsPage() {
                 <option value="">All Status</option>
                 <option value="Active">Active</option>
                 <option value="Expired">Expired</option>
-                <option value="Inactive">Inactive</option>
+                <option value="Inactive">Suspended</option>
               </select>
 
-              <button className="flex items-center gap-2 bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400 text-white px-5 py-2.5 rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.03] active:scale-[0.97] transition-all text-sm font-medium">
-                <Plus size={16} />
+              <button className="flex items-center gap-2 bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400 
+              text-white px-5 py-3 rounded-xl shadow-lg hover:shadow-2xl hover:scale-[1.04] 
+              active:scale-[0.97] transition-all text-sm font-semibold">
+                <Plus size={18} />
                 Add Doctor
               </button>
             </div>
           </div>
 
           {/* 🔥 MAIN CARD */}
-          <div className="flex flex-col flex-1 bg-white/80 backdrop-blur-2xl border border-white/40 rounded-3xl shadow-xl overflow-hidden">
+          <div className="flex flex-col flex-1 bg-white/70 backdrop-blur-2xl border border-white/40 rounded-3xl shadow-2xl overflow-hidden">
 
-            {/* HEADER ROW */}
-            <div className="px-6 py-3 border-b bg-gradient-to-r from-gray-50 to-gray-100 text-xs text-gray-500 flex justify-between font-medium">
+            {/* 🔥 HEADER ROW */}
+            <div className="px-8 py-4 border-b bg-gradient-to-r from-gray-50 to-gray-100 text-xs text-gray-500 flex justify-between font-semibold tracking-wide uppercase">
               <span>Doctor Information</span>
               <span>Status & Actions</span>
             </div>
 
-            {/* LIST */}
-            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+            {/* 🔥 LIST */}
+            <div className="flex-1 overflow-y-auto px-8 py-5 space-y-4">
 
               {loading ? (
                 <div className="flex justify-center items-center h-full">
-                  <p className="text-gray-400 animate-pulse text-sm">
+                  <div className="animate-pulse text-gray-400 text-sm">
                     Loading doctors...
-                  </p>
+                  </div>
                 </div>
               ) : doctors.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-gray-400">
@@ -124,7 +134,7 @@ export default function DoctorsPage() {
                     No doctors found
                   </p>
                   <p className="text-sm">
-                    Try adjusting search or filters
+                    Try adjusting filters or search
                   </p>
                 </div>
               ) : (
@@ -139,19 +149,27 @@ export default function DoctorsPage() {
             </div>
 
             {/* 🔥 PREMIUM PAGINATION */}
-            <div className="border-t bg-white/60 backdrop-blur-xl px-6 py-3 flex items-center justify-between">
+            <div className="border-t bg-white/50 backdrop-blur-xl px-8 py-4 flex items-center justify-between">
 
+              {/* INFO */}
               <p className="text-xs text-gray-500">
-                Showing page <span className="font-semibold">{page}</span> of{" "}
-                <span className="font-semibold">{totalPages}</span>
+                Showing page{" "}
+                <span className="font-semibold text-gray-700">
+                  {page}
+                </span>{" "}
+                of{" "}
+                <span className="font-semibold text-gray-700">
+                  {totalPages}
+                </span>
               </p>
 
+              {/* CONTROLS */}
               <div className="flex items-center gap-2">
 
                 <button
                   onClick={() => setPage(page - 1)}
                   disabled={page === 1}
-                  className="px-3 py-1.5 rounded-lg border text-xs hover:bg-gray-100 transition disabled:opacity-40"
+                  className="px-4 py-1.5 rounded-lg border text-xs hover:bg-gray-100 transition disabled:opacity-40"
                 >
                   Prev
                 </button>
@@ -160,9 +178,9 @@ export default function DoctorsPage() {
                   <button
                     key={i}
                     onClick={() => setPage(i + 1)}
-                    className={`px-3 py-1.5 text-xs rounded-lg transition-all ${
+                    className={`px-4 py-1.5 text-xs rounded-lg transition-all ${
                       page === i + 1
-                        ? "bg-blue-600 text-white shadow-md scale-105"
+                        ? "bg-blue-600 text-white shadow-lg scale-105"
                         : "border hover:bg-gray-100"
                     }`}
                   >
@@ -173,7 +191,7 @@ export default function DoctorsPage() {
                 <button
                   onClick={() => setPage(page + 1)}
                   disabled={page === totalPages}
-                  className="px-3 py-1.5 rounded-lg border text-xs hover:bg-gray-100 transition disabled:opacity-40"
+                  className="px-4 py-1.5 rounded-lg border text-xs hover:bg-gray-100 transition disabled:opacity-40"
                 >
                   Next
                 </button>

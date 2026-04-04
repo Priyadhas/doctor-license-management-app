@@ -1,14 +1,53 @@
 const BASE_URL = "http://localhost:5278/api";
 
-// helper
+// TOKEN
 const getToken = () => localStorage.getItem("token");
 
-// common headers
-const getHeaders = (isJson = true) => ({
-  ...(isJson && { "Content-Type": "application/json" }),
-  Authorization: `Bearer ${getToken()}`,
-});
+// HEADERS
+const getHeaders = (isJson = true) => {
+  const headers = {};
 
+  if (isJson) headers["Content-Type"] = "application/json";
+
+  const token = getToken();
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  return headers;
+};
+
+// GLOBAL RESPONSE HANDLER (MOST IMPORTANT)
+const handleResponse = async (res) => {
+  // TOKEN EXPIRED / UNAUTHORIZED
+  if (res.status === 401) {
+    localStorage.removeItem("token");
+
+    // optional: show message
+    if (typeof window !== "undefined") {
+      alert("Session expired. Please login again.");
+      window.location.href = "/login";
+    }
+
+    throw new Error("Session expired");
+  }
+
+  // OTHER ERRORS
+  if (!res.ok) {
+    let message = "Something went wrong";
+
+    try {
+      const errorData = await res.json();
+      message = errorData.message || message;
+    } catch {
+      // ignore parsing error
+    }
+
+    throw new Error(message);
+  }
+
+  return res.json();
+};
+
+// API
 export const api = {
   // LOGIN
   login: async (data) => {
@@ -18,11 +57,8 @@ export const api = {
       body: JSON.stringify(data),
     });
 
-    if (!res.ok) throw new Error("Login failed");
+    const result = await handleResponse(res);
 
-    const result = await res.json();
-
-    // store token automatically
     if (result.token) {
       localStorage.setItem("token", result.token);
     }
@@ -36,29 +72,29 @@ export const api = {
       headers: getHeaders(false),
     });
 
-    if (!res.ok) throw new Error("Failed to fetch summary");
-
-    return res.json();
+    return handleResponse(res);
   },
 
-  // GET DOCTORS 
+  // GET DOCTORS
   getDoctors: async ({
     page = 1,
     pageSize = 5,
     search = "",
     status = "",
   } = {}) => {
-    const query = `?PageNumber=${page}&PageSize=${pageSize}&search=${search}&status=${status}`;
+    const query = new URLSearchParams({
+      PageNumber: page,
+      PageSize: pageSize,
+      search,
+      status,
+    }).toString();
 
-    const res = await fetch(`${BASE_URL}/doctors${query}`, {
+    const res = await fetch(`${BASE_URL}/doctors?${query}`, {
       headers: getHeaders(false),
     });
 
-    if (!res.ok) throw new Error("Failed to fetch doctors");
+    const result = await handleResponse(res);
 
-    const result = await res.json();
-
-    // normalize response
     return {
       data: result.data || [],
       totalPages: result.totalPages || 1,
@@ -74,12 +110,10 @@ export const api = {
       body: JSON.stringify(data),
     });
 
-    if (!res.ok) throw new Error("Create failed");
-
-    return res.json();
+    return handleResponse(res);
   },
 
-  //UPDATE
+  // ✏️ UPDATE
   updateDoctor: async (id, data) => {
     const res = await fetch(`${BASE_URL}/doctors/${id}`, {
       method: "PUT",
@@ -87,9 +121,7 @@ export const api = {
       body: JSON.stringify(data),
     });
 
-    if (!res.ok) throw new Error("Update failed");
-
-    return res.json();
+    return handleResponse(res);
   },
 
   // DELETE
@@ -99,8 +131,6 @@ export const api = {
       headers: getHeaders(false),
     });
 
-    if (!res.ok) throw new Error("Delete failed");
-
-    return res.json();
+    return handleResponse(res);
   },
 };

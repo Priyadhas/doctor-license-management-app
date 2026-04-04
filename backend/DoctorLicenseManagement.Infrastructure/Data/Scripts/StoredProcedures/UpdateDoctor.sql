@@ -21,13 +21,17 @@ BEGIN
 
     -- UPDATE DOCTOR
     UPDATE Doctors
-    SET 
-        FullName = @FullName,
-        Email = @Email,
-        Specialization = @Specialization,
-        LicenseExpiryDate = @LicenseExpiryDate,
-        Status = @Status
-    WHERE Id = @Id;
+SET 
+    FullName = @FullName,
+    Email = @Email,
+    Specialization = @Specialization,
+    LicenseExpiryDate = @LicenseExpiryDate,
+    Status = CASE 
+                WHEN @LicenseExpiryDate < CAST(GETDATE() AS DATE)
+                THEN 'Expired'
+                ELSE @Status
+             END
+WHERE Id = @Id
 
 END;
 GO

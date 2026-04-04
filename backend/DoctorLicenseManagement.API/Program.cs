@@ -11,31 +11,43 @@ using Microsoft.AspNetCore.Mvc;
 var builder = WebApplication.CreateBuilder(args);
 
 // =============================================
-// ADD SERVICES
+// SERVICES
 // =============================================
+
 builder.Services.AddControllers();
+
+// CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend",
-        policy =>
-        {
-            policy.WithOrigins("http://localhost:3000")
-                  .AllowAnyHeader()
-                  .AllowAnyMethod()
-                  .AllowCredentials();
-        });
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
 });
 
-// APPLICATION SERVICES
+// =============================================
+// DEPENDENCY INJECTION
+// =============================================
+
+// APPLICATION
 builder.Services.AddScoped<IDoctorService, DoctorService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
-// INFRASTRUCTURE SERVICES
+// REMOVE THIS (duplicate)
+// builder.Services.AddScoped<DoctorService>();
+
+// INFRASTRUCTURE
 builder.Services.AddScoped<IDbConnectionFactory, DbConnectionFactory>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 
+// BACKGROUND JOB
+builder.Services.AddHostedService<LicenseExpiryService>();
+
 // =============================================
-// JWT AUTHENTICATION
+// JWT AUTH
 // =============================================
 var jwtKey = builder.Configuration["Jwt:Key"];
 
@@ -47,7 +59,7 @@ if (string.IsNullOrWhiteSpace(jwtKey))
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.RequireHttpsMetadata = false;
+        options.RequireHttpsMetadata = false; // change to true in production
         options.SaveToken = true;
 
         options.TokenValidationParameters = new TokenValidationParameters
@@ -96,7 +108,7 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 var app = builder.Build();
 
 // =============================================
-// DATABASE INITIALIZATION
+// DATABASE INIT
 // =============================================
 using (var scope = app.Services.CreateScope())
 {
@@ -108,12 +120,18 @@ using (var scope = app.Services.CreateScope())
 // =============================================
 // MIDDLEWARE PIPELINE
 // =============================================
+
+// GLOBAL ERROR HANDLER
 app.UseMiddleware<ExceptionMiddleware>();
 
+// AUTH FLOW
 app.UseAuthentication();
-app.UseCors("AllowFrontend");
 app.UseAuthorization();
 
+// CORS
+app.UseCors("AllowFrontend");
+
+// ROUTES
 app.MapControllers();
 
 app.Run();

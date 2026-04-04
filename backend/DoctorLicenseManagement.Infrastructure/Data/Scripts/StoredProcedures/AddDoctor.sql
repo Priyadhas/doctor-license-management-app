@@ -1,40 +1,52 @@
 CREATE OR ALTER PROCEDURE AddDoctor
+(
     @FullName NVARCHAR(100),
     @Email NVARCHAR(100),
     @Specialization NVARCHAR(100),
     @LicenseNumber NVARCHAR(50),
     @LicenseExpiryDate DATE,
-    @Status NVARCHAR(50)
+    @Status NVARCHAR(20) = NULL
+)
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- Duplicate check
-    IF EXISTS (
-        SELECT 1 FROM Doctors WHERE LicenseNumber = @LicenseNumber
-    )
-    BEGIN
-        RAISERROR('License number already exists', 16, 1);
-        RETURN;
-    END
+    DECLARE @FinalStatus NVARCHAR(20);
 
-    INSERT INTO Doctors (
+    -- STEP 1: NORMALIZE INPUT STATUS
+    SET @Status = LTRIM(RTRIM(ISNULL(@Status, 'Active')));
+
+    IF (@Status NOT IN ('Active', 'Inactive', 'Expired'))
+        SET @Status = 'Active';
+
+    -- STEP 2: AUTO EXPIRED OVERRIDE
+    IF (@LicenseExpiryDate < CAST(GETDATE() AS DATE))
+        SET @FinalStatus = 'Expired';
+    ELSE
+        SET @FinalStatus = @Status;
+
+    -- STEP 3: INSERT
+    INSERT INTO Doctors
+    (
         FullName,
         Email,
         Specialization,
         LicenseNumber,
         LicenseExpiryDate,
-        Status
+        Status,
+        CreatedDate
     )
-    VALUES (
+    VALUES
+    (
         @FullName,
         @Email,
         @Specialization,
         @LicenseNumber,
         @LicenseExpiryDate,
-        @Status
+        @FinalStatus,
+        GETDATE()
     );
 
-    -- RETURN NEW ID
+    -- STEP 4: RETURN ID
     SELECT CAST(SCOPE_IDENTITY() AS INT);
 END

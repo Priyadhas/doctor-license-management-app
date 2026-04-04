@@ -35,11 +35,12 @@ public class DoctorService : IDoctorService
             FROM Doctors
             WHERE IsDeleted = 0
 
-            AND (
-                @Search IS NULL OR
-                FullName LIKE '%' + @Search + '%' OR
-                LicenseNumber LIKE '%' + @Search + '%'
-            )
+           AND (
+            @Search IS NULL OR
+            LOWER(FullName) LIKE '%' + LOWER(@Search) + '%' OR
+            LOWER(LicenseNumber) LIKE '%' + LOWER(@Search) + '%' OR
+            LOWER(ISNULL(LTRIM(RTRIM(Specialization)), '')) LIKE '%' + LOWER(@Search) + '%'
+        )
 
             AND (
                 @Status IS NULL OR
@@ -128,6 +129,7 @@ public class DoctorService : IDoctorService
 
         using var connection = _factory.CreateConnection();
 
+        // 🔍 CHECK DUPLICATE LICENSE
         var exists = await connection.ExecuteScalarAsync<int>(
             "SELECT COUNT(1) FROM Doctors WHERE LicenseNumber = @LicenseNumber",
             new { dto.LicenseNumber }
@@ -136,8 +138,18 @@ public class DoctorService : IDoctorService
         if (exists > 0)
             throw new InvalidOperationException("License number already exists");
 
-        if (dto.LicenseExpiryDate < DateTime.Today)
-            throw new ArgumentException("License expiry date cannot be in the past");
+        // AUTO STATUS LOGIC
+        string status;
+
+        if (dto.LicenseExpiryDate.HasValue &&
+            dto.LicenseExpiryDate.Value.Date < DateTime.UtcNow.Date)
+        {
+            status = "Expired";
+        }
+        else
+        {
+            status = NormalizeStatus(dto.Status);
+        }
 
         var parameters = new
         {
@@ -146,7 +158,7 @@ public class DoctorService : IDoctorService
             dto.Specialization,
             dto.LicenseNumber,
             LicenseExpiryDate = dto.LicenseExpiryDate!.Value,
-            Status = NormalizeStatus(dto.Status)
+            Status = status
         };
 
         return await connection.ExecuteScalarAsync<int>(
@@ -159,13 +171,26 @@ public class DoctorService : IDoctorService
     // ============================
     // UPDATE
     // ============================
-    public async Task<bool> UpdateDoctorAsync(int id, UpdateDoctorDto dto)
+        public async Task<bool> UpdateDoctorAsync(int id, UpdateDoctorDto dto)
     {
         ValidateUpdate(dto);
 
         using var connection = _factory.CreateConnection();
 
         await EnsureDoctorExists(connection, id);
+
+        // AUTO STATUS LOGIC (IMPORTANT)
+        string status;
+
+        if (dto.LicenseExpiryDate.HasValue &&
+            dto.LicenseExpiryDate.Value.Date < DateTime.UtcNow.Date)
+        {
+            status = "Expired";
+        }
+        else
+        {
+            status = NormalizeStatus(dto.Status);
+        }
 
         var result = await connection.ExecuteAsync(@"
             UPDATE Doctors
@@ -183,7 +208,7 @@ public class DoctorService : IDoctorService
                 dto.Email,
                 dto.Specialization,
                 dto.LicenseExpiryDate,
-                Status = NormalizeStatus(dto.Status)
+                Status = status
             });
 
         return result > 0;
@@ -332,4 +357,20 @@ public class DoctorService : IDoctorService
         if (exists == 0)
             throw new KeyNotFoundException("Doctor not found");
     }
+
+        // ============================
+        // HELPERS
+        // ============================
+        public async Task<int> ExpireLicensesAsync()
+        {
+            using var connection = _factory.CreateConnection();
+
+            return await connection.ExecuteAsync(@"
+                UPDATE Doctors
+                SET Status = 'Expired'
+                WHERE LicenseExpiryDate < CAST(GETDATE() AS DATE)
+                AND Status != 'Expired'
+            ");
+        }
+
 }

@@ -23,7 +23,7 @@ public interface IDoctorService
     // Update doctor details
     Task<bool> UpdateDoctorAsync(int id, UpdateDoctorDto dto);
     
-    // Update doctor status (Active / Suspended)
+    // Update doctor status (Active / Suspended/ Expired)
     Task<bool> UpdateStatusAsync(int id, string status);
     
     // Soft delete a doctor
@@ -34,5 +34,7 @@ public interface IDoctorService
 
     //Get Doctor Summary
     Task<DoctorSummaryDto> GetDoctorSummaryAsync();
+
+    Task<int> ExpireLicensesAsync();
 
 }

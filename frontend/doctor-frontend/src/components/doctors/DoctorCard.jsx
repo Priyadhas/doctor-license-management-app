@@ -1,67 +1,87 @@
 import { Pencil, Trash2, Stethoscope } from "lucide-react";
 
 export default function DoctorCard({ doctor, onDelete }) {
-  const getStatusStyle = () => {
+  const getStatus = () => {
     switch (doctor.status) {
       case "Active":
-        return "bg-green-50 text-green-700 border border-green-200";
+        return {
+          style: "bg-green-50 text-green-700 border border-green-200",
+          dot: "bg-green-500",
+        };
       case "Expired":
-        return "bg-red-50 text-red-600 border border-red-200";
+        return {
+          style: "bg-red-50 text-red-600 border border-red-200",
+          dot: "bg-red-500",
+        };
       default:
-        return "bg-gray-50 text-gray-600 border border-gray-200";
+        return {
+          style: "bg-gray-50 text-gray-600 border border-gray-200",
+          dot: "bg-gray-400",
+        };
     }
   };
 
+  const status = getStatus();
+
   return (
-    <div className="group bg-white/80 backdrop-blur-md border border-gray-200 rounded-xl px-5 py-4 flex items-center justify-between transition-all duration-200 hover:shadow-md hover:-translate-y-[1px]">
+    <div className="group grid grid-cols-4 items-center gap-4 px-6 py-4 rounded-2xl bg-white border border-gray-200 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-[2px]">
 
-      {/* LEFT SECTION */}
-      <div className="flex items-center gap-4">
-
-        {/* AVATAR */}
-        <div className="w-11 h-11 flex items-center justify-center rounded-full bg-blue-100 text-blue-600">
+      {/* 🔹 COLUMN 1: AVATAR + NAME */}
+      <div className="flex items-center gap-3 min-w-0">
+        <div className="w-11 h-11 flex items-center justify-center rounded-lg bg-blue-100 text-blue-600">
           <Stethoscope size={18} />
         </div>
 
-        {/* INFO */}
-        <div className="flex flex-col">
-          <h3 className="text-[15px] font-semibold text-gray-800">
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-gray-900 truncate">
             {doctor.fullName}
-          </h3>
-
-          <p className="text-sm text-gray-500">
-            {doctor.specialization}
           </p>
         </div>
       </div>
 
-      {/* RIGHT SECTION */}
-      <div className="flex items-center gap-4">
+      {/* 🔹 COLUMN 2: SPECIALIZATION */}
+      <div className="text-sm text-gray-500 truncate">
+        {doctor.specialization}
+      </div>
 
-        {/* STATUS BADGE */}
-        <span
-          className={`px-3 py-1 text-xs rounded-full font-medium ${getStatusStyle()}`}
-        >
+      {/* 🔹 COLUMN 3: STATUS */}
+      <div>
+        <div className={`inline-flex items-center gap-2 px-3 py-1 text-xs rounded-full font-medium ${status.style}`}>
+          <span className={`w-2 h-2 rounded-full ${status.dot}`} />
           {doctor.status}
-        </span>
+        </div>
+      </div>
 
-        {/* ACTIONS */}
-        <div className="flex items-center gap-2">
+      {/* 🔹 COLUMN 4: ACTIONS */}
+      <div className="flex justify-end items-center gap-2">
 
-          {/* EDIT */}
-          <button className="p-2 rounded-full hover:bg-blue-50 text-gray-600 hover:text-blue-600 transition">
+        {/* EDIT */}
+        <div className="relative group">
+          <button className="p-2 rounded-lg hover:bg-blue-50 text-gray-600 hover:text-blue-600 transition">
             <Pencil size={16} />
           </button>
 
-          {/* DELETE */}
+          {/* Tooltip */}
+          <span className="absolute -top-7 left-1/2 -translate-x-1/2 text-[10px] bg-gray-800 text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition">
+            Edit
+          </span>
+        </div>
+
+        {/* DELETE */}
+        <div className="relative group">
           <button
             onClick={() => onDelete(doctor.id)}
-            className="p-2 rounded-full hover:bg-red-50 text-gray-600 hover:text-red-600 transition"
+            className="p-2 rounded-lg hover:bg-red-50 text-gray-600 hover:text-red-600 transition"
           >
             <Trash2 size={16} />
           </button>
 
+          {/* Tooltip */}
+          <span className="absolute -top-7 left-1/2 -translate-x-1/2 text-[10px] bg-gray-800 text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition">
+            Delete
+          </span>
         </div>
+
       </div>
     </div>
   );
