@@ -254,4 +254,19 @@ public class DoctorsController : ControllerBase
         });
     }
 
+    // ============================
+    // ACTIVITY
+    // ============================
+    [HttpGet("activity")]
+    public async Task<IActionResult> GetActivity()
+    {
+        var result = await _doctorService.GetRecentActivitiesAsync();
+
+        return Ok(new
+        {
+            success = true,
+            data = result
+        });
+    }
+
 }

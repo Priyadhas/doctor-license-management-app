@@ -34,7 +34,9 @@ public interface IDoctorService
 
     //Get Doctor Summary
     Task<DoctorSummaryDto> GetDoctorSummaryAsync();
-
+    // Expired license
     Task<int> ExpireLicensesAsync();
+    //Get Recent Activity
+    Task<IEnumerable<ActivityDto>> GetRecentActivitiesAsync();
 
 }

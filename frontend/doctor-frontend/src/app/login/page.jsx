@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/src/services/api";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
@@ -12,15 +12,19 @@ const loginSchema = z.object({
   email: z
     .string()
     .min(1, "Email is required")
-    .email("Enter a valid email address"),
+    .email("Enter a valid email"),
 
   password: z
     .string()
-    .min(6, "Password must be at least 6 characters"),
+    .min(1, "Password is required")
+    .min(6, "Minimum 6 characters"),
 });
 
 export default function LoginPage() {
   const router = useRouter();
+
+  const emailRef = useRef(null);
+  const passwordRef = useRef(null);
 
   const [form, setForm] = useState({
     email: "",
@@ -29,33 +33,62 @@ export default function LoginPage() {
 
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState("");
-  const [successMsg, setSuccessMsg] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  const isTyping = form.email.length > 0 || form.password.length > 0;
+
   // HANDLE INPUT
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-    setErrors({ ...errors, [e.target.name]: "" });
+    const { name, value } = e.target;
+
+    setForm((prev) => ({ ...prev, [name]: value }));
+
+    // REAL-TIME VALIDATION (PREMIUM UX)
+    if (name === "email") {
+      const check = loginSchema.shape.email.safeParse(value);
+      setErrors((prev) => ({
+        ...prev,
+        email: check.success ? "" : check.error.issues[0].message,
+      }));
+    }
+
+    if (name === "password") {
+      const check = loginSchema.shape.password.safeParse(value);
+      setErrors((prev) => ({
+        ...prev,
+        password: check.success ? "" : check.error.issues[0].message,
+      }));
+    }
+
     setServerError("");
   };
 
-  // LOGIN HANDLER
+  // LOGIN
   const handleLogin = async (e) => {
     e.preventDefault();
 
     setErrors({});
     setServerError("");
-    setSuccessMsg("");
 
     const result = loginSchema.safeParse(form);
 
     if (!result.success) {
-      const fieldErrors = {};
-      result.error.errors.forEach((err) => {
-        fieldErrors[err.path[0]] = err.message;
-      });
+      const formatted = result.error.flatten();
+
+      const fieldErrors = {
+        email: formatted.fieldErrors.email?.[0] || "",
+        password: formatted.fieldErrors.password?.[0] || "",
+      };
+
       setErrors(fieldErrors);
+
+      if (fieldErrors.email) {
+        emailRef.current?.focus();
+      } else if (fieldErrors.password) {
+        passwordRef.current?.focus();
+      }
+
       return;
     }
 
@@ -66,16 +99,14 @@ export default function LoginPage() {
 
       localStorage.setItem("token", res.token);
 
-      setSuccessMsg("Login successful. Redirecting...");
-
-      setTimeout(() => {
-        router.push("/dashboard");
-      }, 1000);
-
+      router.push("/dashboard");
     } catch (err) {
-      setServerError(
-        err?.response?.data?.message || "Invalid email or password"
-      );
+      // CLEAN ERROR
+      if (err.message.toLowerCase().includes("invalid")) {
+        setServerError("Invalid credentials");
+      } else {
+        setServerError(err.message || "Something went wrong");
+      }
     } finally {
       setLoading(false);
     }
@@ -84,31 +115,32 @@ export default function LoginPage() {
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
 
-      {/* BACKGROUND IMAGE (BLURRED) */}
+      {/* BACKGROUND */}
       <Image
         src="/images/Doctors in a modern hospital setting.png"
         alt="Background"
         fill
-        className="object-cover blur-xl scale-110"
+        className={`
+          object-cover transition-all duration-700
+          ${isTyping ? "blur-xl scale-110" : "blur-0 scale-100"}
+        `}
         priority
       />
 
-      {/* DARK OVERLAY */}
       <div className="absolute inset-0 bg-black/30" />
 
-      {/* LOGIN CARD */}
       <div className="relative z-10 w-full max-w-md px-6">
 
+        {/* IMPORTANT: noValidate */}
         <form
           onSubmit={handleLogin}
+          noValidate
           className="
             bg-white/80 backdrop-blur-2xl 
             border border-white/40 
             rounded-3xl 
             shadow-2xl 
             p-8 space-y-6
-            hover:shadow-[0_20px_60px_rgba(0,0,0,0.25)]
-            transition-all duration-500
           "
         >
 
@@ -118,20 +150,13 @@ export default function LoginPage() {
               Welcome Back
             </h2>
             <p className="text-gray-500 text-sm mt-1">
-              Access your medical license dashboard
+              Access your dashboard
             </p>
           </div>
 
-          {/* SUCCESS MESSAGE */}
-          {successMsg && (
-            <div className="text-green-600 text-sm text-center font-medium">
-              {successMsg}
-            </div>
-          )}
-
-          {/* ERROR MESSAGE */}
+          {/* SERVER ERROR */}
           {serverError && (
-            <div className="text-red-500 text-sm text-center font-medium">
+            <div className="bg-red-50 border border-red-200 text-red-600 text-sm text-center px-4 py-2 rounded-xl">
               {serverError}
             </div>
           )}
@@ -141,18 +166,18 @@ export default function LoginPage() {
             <div className="relative">
               <Mail className="absolute left-3 top-3 text-gray-400" size={18} />
 
+              {/* FIXED: type="text" */}
               <input
+                ref={emailRef}
                 name="email"
-                type="email"
+                type="text"
                 placeholder="Email address"
                 value={form.email}
                 onChange={handleChange}
                 className={`
                   w-full pl-10 pr-4 py-3 rounded-xl border 
-                  ${errors.email ? "border-red-400" : "border-gray-200"}
-                  bg-white/90
-                  focus:ring-2 focus:ring-blue-500 outline-none 
-                  transition-all shadow-sm
+                  ${errors.email ? "border-red-400 ring-2 ring-red-200" : "border-gray-200"}
+                  focus:ring-2 focus:ring-blue-500 outline-none
                 `}
               />
             </div>
@@ -168,6 +193,7 @@ export default function LoginPage() {
               <Lock className="absolute left-3 top-3 text-gray-400" size={18} />
 
               <input
+                ref={passwordRef}
                 name="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="Password"
@@ -175,18 +201,15 @@ export default function LoginPage() {
                 onChange={handleChange}
                 className={`
                   w-full pl-10 pr-10 py-3 rounded-xl border 
-                  ${errors.password ? "border-red-400" : "border-gray-200"}
-                  bg-white/90
-                  focus:ring-2 focus:ring-blue-500 outline-none 
-                  transition-all shadow-sm
+                  ${errors.password ? "border-red-400 ring-2 ring-red-200" : "border-gray-200"}
+                  focus:ring-2 focus:ring-blue-500 outline-none
                 `}
               />
 
-              {/* TOGGLE */}
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                className="absolute right-3 top-3 text-gray-400"
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
@@ -204,17 +227,15 @@ export default function LoginPage() {
             className="
               w-full bg-gradient-to-r from-blue-600 to-blue-400 text-white py-3 rounded-xl 
               font-semibold shadow-lg 
-              hover:shadow-2xl hover:scale-[1.03] 
-              active:scale-[0.97]
-              transition-all duration-300
+              hover:scale-[1.02] active:scale-[0.98]
+              transition
               disabled:opacity-60
             "
           >
             {loading ? "Logging in..." : "Login"}
           </button>
 
-          {/* FOOTER */}
-          <p className="text-xs text-center text-gray-400 mt-2">
+          <p className="text-xs text-center text-gray-400">
             © 2026 Doctor License Management
           </p>
 

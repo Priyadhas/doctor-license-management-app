@@ -17,7 +17,7 @@ export default function StatsCard({ title, value, type }) {
   transition-all duration-300 hover:scale-[1.02]          
 "
     >
-      {/* GRADIENT WAVE */}
+      {/*  GRADIENT WAVE */}
       <div
         className="absolute bottom-0 left-0 w-full h-16 
       bg-gradient-to-r from-blue-200/30 to-transparent rounded-b-2xl"

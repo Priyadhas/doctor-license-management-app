@@ -57,6 +57,19 @@ END
 GO
 
 -- =============================================
+-- ACTIVITY TABLE
+-- =============================================
+IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='ActivityLogs' AND xtype='U')
+BEGIN
+    CREATE TABLE ActivityLogs (
+        Id INT PRIMARY KEY IDENTITY(1,1),
+        Message NVARCHAR(255) NOT NULL,
+        Type NVARCHAR(50) NOT NULL,
+        CreatedAt DATETIME DEFAULT GETDATE()
+    )
+END
+
+-- =============================================
 -- CLEAN INVALID STATUS DATA
 -- =============================================
 UPDATE Doctors
