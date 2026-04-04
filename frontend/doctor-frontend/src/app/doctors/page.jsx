@@ -8,6 +8,7 @@ import { api } from "@/src/services/api";
 import { Search, Plus } from "lucide-react";
 import AddDoctorModal from "../../components/doctors/AddDoctorModel";
 import toast from "react-hot-toast";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function DoctorsPage() {
   const [doctors, setDoctors] = useState([]);
@@ -17,7 +18,7 @@ export default function DoctorsPage() {
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
-
+  const queryClient = useQueryClient();
   // STABLE FETCH FUNCTION
   const fetchDoctors = useCallback(async () => {
     try {
@@ -58,6 +59,9 @@ export default function DoctorsPage() {
     try {
       await api.deleteDoctor(id);
       toast.success("Doctor deleted successfully");
+      queryClient.invalidateQueries(["doctors"]);
+      queryClient.invalidateQueries(["summary"]);
+      queryClient.invalidateQueries(["activity"]);
       fetchDoctors();
     } catch (err) {
       console.error(err);

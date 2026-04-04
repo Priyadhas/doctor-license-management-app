@@ -67,6 +67,8 @@ export default function EditDoctorModal({ open, onClose, doctor }) {
       });
 
       queryClient.invalidateQueries(["doctors"]);
+      queryClient.invalidateQueries(["summary"]);   
+      queryClient.invalidateQueries(["activity"]);
       onClose();
     },
 

@@ -68,6 +68,8 @@ export default function AddDoctorModal({ open, onClose }) {
       });
 
       queryClient.invalidateQueries(["doctors"]);
+      queryClient.invalidateQueries(["summary"]);
+      queryClient.invalidateQueries(["activity"]);
       onClose();
     },
 
@@ -140,7 +142,6 @@ export default function AddDoctorModal({ open, onClose }) {
         fullName: formattedName,
       });
     } catch {
-      // ❌ DO NOTHING (handled in onError)
     }
   };
 

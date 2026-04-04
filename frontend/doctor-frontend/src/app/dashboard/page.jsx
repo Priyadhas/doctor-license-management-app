@@ -13,7 +13,7 @@ export default function DashboardPage() {
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["dashboard-summary"],
+    queryKey: ["summary"],
     queryFn: api.getSummary,
     staleTime: 1000 * 60 * 5, // cache 5 mins
   });
