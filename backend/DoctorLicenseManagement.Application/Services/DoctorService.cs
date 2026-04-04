@@ -43,9 +43,24 @@ public class DoctorService : IDoctorService
         )
 
             AND (
-                @Status IS NULL OR
-                Status = @Status
+            @Status IS NULL OR
+            (
+                @Status = 'Expired'
+                AND LicenseExpiryDate < CAST(GETDATE() AS DATE)
+                AND Status != 'Suspended'
             )
+            OR
+            (
+                @Status = 'Suspended'
+                AND Status = 'Suspended'
+            )
+            OR
+            (
+                @Status = 'Active'
+                AND Status = 'Active'
+                AND LicenseExpiryDate >= CAST(GETDATE() AS DATE)
+            )
+        )
         ";
 
         // TOTAL COUNT

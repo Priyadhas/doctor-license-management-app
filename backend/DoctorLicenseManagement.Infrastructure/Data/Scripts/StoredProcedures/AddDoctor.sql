@@ -16,7 +16,7 @@ BEGIN
     -- STEP 1: NORMALIZE INPUT STATUS
     SET @Status = LTRIM(RTRIM(ISNULL(@Status, 'Active')));
 
-    IF (@Status NOT IN ('Active', 'Inactive', 'Expired'))
+    IF (@Status NOT IN ('Active', 'Suspended', 'Expired'))
         SET @Status = 'Active';
 
     -- STEP 2: AUTO EXPIRED OVERRIDE

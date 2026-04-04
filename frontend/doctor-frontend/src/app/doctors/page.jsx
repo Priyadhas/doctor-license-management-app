@@ -98,7 +98,7 @@ export default function DoctorsPage() {
                 <option value="">All Status</option>
                 <option value="Active">Active</option>
                 <option value="Expired">Expired</option>
-                <option value="Inactive">Suspended</option>
+                <option value="Suspended">Suspended</option>
               </select>
 
               <button className="flex items-center gap-2 bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400 

@@ -27,9 +27,24 @@ BEGIN
     LOWER(ISNULL(Specialization, '')) LIKE '%' + LOWER(@Search) + '%'
 )
     AND (
-        @Status IS NULL OR
-        Status = @Status
+    @Status IS NULL OR
+    (
+        @Status = 'Expired'
+        AND LicenseExpiryDate < CAST(GETDATE() AS DATE)
+        AND Status != 'Suspended'
     )
+    OR
+    (
+        @Status = 'Suspended'
+        AND Status = 'Suspended'
+    )
+    OR
+    (
+        @Status = 'Active'
+        AND Status = 'Active'
+        AND LicenseExpiryDate >= CAST(GETDATE() AS DATE)
+    )
+)
     ORDER BY CreatedDate DESC
     OFFSET (@PageNumber - 1) * @PageSize ROWS
     FETCH NEXT @PageSize ROWS ONLY;
