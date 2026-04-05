@@ -139,3 +139,7 @@ This project is part of a technical assessment demonstrating real-world SaaS fro
 ![alt text](image-6.png)
 
 ![alt text](image-7.png)
+
+Login Credentials
+Email: priyamariadhas@gmail.com
+Password: Admin@963
