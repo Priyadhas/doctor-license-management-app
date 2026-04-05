@@ -4,7 +4,7 @@ A modern, scalable frontend application built using Next.js (App Router) and Tai
 
 ---
 
-✨ Features
+  Features
 
 -  Authentication (Login, Register, Forgot & Reset Password)
 -  Dashboard with real-time statistics
@@ -46,7 +46,7 @@ src/
 
 1 Clone Repository
 
-git clone <your-repo-url>
+git clone 
 cd doctor-frontend
 
 2 Install Dependencies
@@ -118,3 +118,24 @@ Priya Maria Dhas
  Note
 
 This project is part of a technical assessment demonstrating real-world SaaS frontend development practices.
+
+### Screenshots of UI
+
+# Login Page
+![alt text](image-1.png)
+
+# Signup Page
+![alt text](image-2.png)
+
+# Forget password
+![alt text](image-3.png)
+
+# Dashboard
+![alt text](image-4.png)
+
+# Doctors License Management Page
+![alt text](image-5.png)
+
+![alt text](image-6.png)
+
+![alt text](image-7.png)

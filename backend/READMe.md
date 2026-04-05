@@ -4,7 +4,7 @@ A production-ready backend system built using .NET 8 Web API following Clean Arc
 
 ---
 
-✨ Features
+  Features
 
 -  Authentication (JWT-based)
 -  Secure password hashing
@@ -78,7 +78,7 @@ Doctor Fields
 
 1 Clone Repository
 
-git clone <your-repo-url>
+git clone 
 cd DoctorLicenseManagement.API
 
 2 Configure Database
@@ -152,3 +152,24 @@ Priya Maria Dhas
  Note
 
 This project demonstrates production-grade backend development aligned with real-world SaaS systems.
+
+
+## Some Screenshots of Postman -backend API testing
+
+# User Registration POST auth/register
+![alt text](image-8.png)
+
+# User Login POST auth/login
+![alt text](image-9.png)
+
+# GET api/doctors
+![alt text](image-10.png)
+
+# GET api/doctors?status = Active
+![alt text](image-11.png)
+
+# GET api/doctors/{id}
+![alt text](image-12.png)
+
+# PUT api/doctors/1
+![alt text](image-13.png)

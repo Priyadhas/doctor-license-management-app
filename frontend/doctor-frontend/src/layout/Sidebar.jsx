@@ -28,7 +28,7 @@ export default function Sidebar() {
       {/* 🔷 TOP */}
       <div>
 
-        {/* 🔥 BRAND */}
+        {/* BRAND */}
         <div className="flex items-center gap-3 mb-12">
           <div className="relative w-11 h-11 rounded-xl bg-white flex items-center justify-center shadow-lg">
 
@@ -48,7 +48,7 @@ export default function Sidebar() {
           </div>
         </div>
 
-        {/* 🔥 MENU */}
+        {/* MENU */}
         <div className="space-y-2">
           {menu.map((item) => {
             const isActive = pathname === item.path;
@@ -100,7 +100,7 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* 🔻 PROFILE */}
+      {/*  PROFILE */}
       <div className="pt-5 border-t border-white/20">
 
         <div className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/10 transition cursor-pointer">

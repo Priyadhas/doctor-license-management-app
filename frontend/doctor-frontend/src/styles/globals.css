@@ -2,19 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 🔥 ROOT DESIGN TOKENS */
+/* ROOT DESIGN TOKENS */
 :root {
   --radius: 12px;
 }
 
-/* 🔥 GLOBAL BODY */
+/* GLOBAL BODY */
 body {
   @apply bg-gradient-to-br from-blue-50 via-white to-blue-100 text-gray-800 antialiased;
   font-feature-settings: "ss01", "ss02";
 }
 
 
-/* 🔥 CUSTOM SCROLLBAR (PREMIUM) */
+/* CUSTOM SCROLLBAR (PREMIUM) */
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -32,17 +32,17 @@ body {
   background: rgba(59, 130, 246, 0.6); /* blue-500 */
 }
 
-/* 🔥 GLASS UTILITY */
+/* GLASS UTILITY */
 .glass {
   @apply bg-white/60 backdrop-blur-xl border border-white/40 shadow-lg;
 }
 
-/* 🔥 CARD BASE */
+/* CARD BASE */
 .card {
   @apply rounded-2xl bg-white/80 backdrop-blur-xl border border-gray-200 shadow-md;
 }
 
-/* 🔥 BUTTON BASE */
+/* BUTTON BASE */
 .btn-primary {
   @apply bg-gradient-to-r from-blue-600 to-blue-500 text-white px-4 py-2 rounded-lg shadow-md 
   hover:shadow-lg hover:scale-[1.02] active:scale-[0.97] transition-all;
@@ -52,13 +52,13 @@ body {
   @apply border border-gray-200 bg-white px-4 py-2 rounded-lg hover:bg-gray-100 transition;
 }
 
-/* 🔥 INPUT BASE */
+/* INPUT BASE */
 .input {
   @apply w-full px-4 py-2 rounded-lg border border-gray-200 bg-white 
   focus:ring-2 focus:ring-blue-500 focus:border-blue-400 outline-none transition;
 }
 
-/* 🔥 TEXT STYLES */
+/* TEXT STYLES */
 .title {
   @apply text-xl font-semibold text-gray-900 tracking-tight;
 }
@@ -67,7 +67,7 @@ body {
   @apply text-sm text-gray-500;
 }
 
-/* 🔥 HOVER CARD EFFECT */
+/* HOVER CARD EFFECT */
 .hover-lift {
   @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-[2px];
 }

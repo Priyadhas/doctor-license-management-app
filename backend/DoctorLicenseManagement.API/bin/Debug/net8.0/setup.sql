@@ -347,7 +347,7 @@ BEGIN
     VALUES (
         'priyamariadhas@gmail.com',
 
-        --TEMP PASSWORD (PLAIN for now)
+        -- ⚠️ TEMP PASSWORD (PLAIN for now)
         -- Later replace with HASH from backend
         'Admin@963',
 

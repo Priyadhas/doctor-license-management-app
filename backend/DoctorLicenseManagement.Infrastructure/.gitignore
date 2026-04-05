@@ -1,4 +1,47 @@
+# build
 bin/
 obj/
+
+# user-specific files
 *.user
 *.suo
+*.userosscache
+*.sln.docstates
+
+# VS Code
+.vscode/
+
+# Rider / IntelliJ
+.idea/
+
+# logs
+*.log
+
+# ASP.NET
+*.db
+*.db-shm
+*.db-wal
+
+# environment configs
+appsettings.Development.json
+appsettings.Local.json
+
+# secrets
+secrets.json
+
+# publish
+publish/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# test results
+TestResults/
+
+# NuGet
+*.nupkg
+*.snupkg
+
+# coverage
+coverage/

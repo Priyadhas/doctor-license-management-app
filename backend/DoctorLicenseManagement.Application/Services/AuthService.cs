@@ -38,11 +38,7 @@ public async Task<object> LoginAsync(LoginDto dto)
 
     if (user == null)
         throw new Exception("User not found");
-
-    // DEBUG BEFORE VALIDATION
-    Console.WriteLine("INPUT PASSWORD: " + dto.Password);
-    Console.WriteLine("DB PASSWORD: " + user.Password);
-
+        
   var isValid = dto.Password == (string)user.Password;
 
     if (!isValid)

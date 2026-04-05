@@ -31,7 +31,7 @@ export default function Header({ title = "Doctor Management" }) {
     sessionStorage.removeItem("token");
 
     //  TOAST MESSAGE
-    toast.success("Logged out successfully 👋", {
+    toast.success("Logged out successfully", {
       duration: 2000,
     });
 

@@ -8,7 +8,6 @@ export const handleResponse = async (res) => {
   }
 
   if (!res.ok) {
-    //  map backend error safely
     const message =
       data?.message ||
       data?.error ||
