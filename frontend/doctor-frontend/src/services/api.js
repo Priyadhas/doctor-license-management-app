@@ -1,56 +1,108 @@
 const BASE_URL = "http://localhost:5278/api";
 
+// ============================
 // GET TOKEN
-const getToken = () => localStorage.getItem("token");
+// ============================
+const getToken = () => {
+  if (typeof window !== "undefined") {
+    return (
+      localStorage.getItem("token") ||
+      sessionStorage.getItem("token")
+    );
+  }
+  return null;
+};
 
-// HANDLE RESPONSE
+// ============================
+// LOGOUT HELPER
+// ============================
+const clearAuth = () => {
+  localStorage.removeItem("token");
+  sessionStorage.removeItem("token");
+};
+
+// ============================
+// HANDLE RESPONSE (PREMIUM)
+// ============================
 const handleResponse = async (res) => {
-  const text = await res.text();
+  let data = null;
 
+  try {
+    data = await res.json();
+  } catch {
+    data = null;
+  }
+
+  //  HANDLE UNAUTHORIZED (AUTO LOGOUT)
   if (res.status === 401) {
-    localStorage.removeItem("token");
-    window.location.href = "/login";
+    clearAuth();
+
+    if (typeof window !== "undefined") {
+      window.location.href = "/login";
+    }
+
     throw new Error("Session expired. Please login again.");
   }
 
+  //  HANDLE OTHER ERRORS
   if (!res.ok) {
-    try {
-      const errorData = JSON.parse(text);
+    const message =
+      data?.message ||
+      data?.title ||
+      "Something went wrong. Please try again.";
 
-      throw new Error(
-        errorData.message ||
-        errorData.title ||
-        "Something went wrong"
-      );
-    } catch {
-      throw new Error(text || "Something went wrong");
-    }
+    
+    console.warn("API Error:", message);
+    throw new Error(message);
   }
 
-  return text ? JSON.parse(text) : {};
+  return data;
 };
 
+// ============================
+// SAFE FETCH (NETWORK SAFE)
+// ============================
+const safeFetch = async (url, options) => {
+  try {
+    const res = await fetch(url, options);
+    return await handleResponse(res);
+  } catch (err) {
+    //  NETWORK ERROR (server down etc)
+    if (err.message.includes("Failed to fetch")) {
+      throw new Error("Server not reachable 🚫");
+    }
+
+    throw err;
+  }
+};
+
+// ============================
 // HEADERS
-const getHeaders = (isJson = true) => ({
-  ...(isJson && { "Content-Type": "application/json" }),
-  Authorization: `Bearer ${getToken()}`,
-});
+// ============================
+const getHeaders = (isJson = true) => {
+  const token = getToken();
+
+  return {
+    ...(isJson && { "Content-Type": "application/json" }),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+};
 
 // ============================
 // API METHODS
 // ============================
 export const api = {
+  // ============================
   // LOGIN
+  // ============================
   login: async (data) => {
-    const res = await fetch(`${BASE_URL}/auth/login`, {
+    const result = await safeFetch(`${BASE_URL}/auth/login`, {
       method: "POST",
-      headers: getHeaders(),
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
 
-    const result = await handleResponse(res);
-
-    if (result.token) {
+    if (result?.token) {
       localStorage.setItem("token", result.token);
     }
 
@@ -58,17 +110,50 @@ export const api = {
   },
 
   // ============================
+  // REGISTER
+  // ============================
+  register: async (data) => {
+    return safeFetch(`${BASE_URL}/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+  },
+
+  // ============================
+  // FORGOT PASSWORD
+  // ============================
+  forgotPassword: async (email) => {
+    return safeFetch(`${BASE_URL}/auth/forgot-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+  },
+
+  // ============================
+  // RESET PASSWORD
+  // ============================
+  resetPassword: async (data) => {
+    return safeFetch(`${BASE_URL}/auth/reset-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+  },
+
+  // ============================
   // DASHBOARD SUMMARY
   // ============================
   getSummary: async () => {
-    const res = await fetch(`${BASE_URL}/doctors/summary`, {
+    const token = getToken();
+    if (!token) throw new Error("Please login first");
+
+    const result = await safeFetch(`${BASE_URL}/doctors/summary`, {
       headers: getHeaders(false),
     });
 
-    const result = await handleResponse(res);
-
-    // normalize response
-    return result?.data ?? result ?? {};
+    return result.data;
   },
 
   // ============================
@@ -80,13 +165,14 @@ export const api = {
     search = "",
     status = "",
   } = {}) => {
+    const token = getToken();
+    if (!token) throw new Error("Please login first");
+
     const query = `?PageNumber=${page}&PageSize=${pageSize}&search=${search}&status=${status}`;
 
-    const res = await fetch(`${BASE_URL}/doctors${query}`, {
+    const result = await safeFetch(`${BASE_URL}/doctors${query}`, {
       headers: getHeaders(false),
     });
-
-    const result = await handleResponse(res);
 
     return {
       data: result?.data ?? [],
@@ -96,55 +182,53 @@ export const api = {
   },
 
   // ============================
-  // CREATE
+  // CREATE DOCTOR
   // ============================
   createDoctor: async (data) => {
-    const res = await fetch(`${BASE_URL}/doctors`, {
+    return safeFetch(`${BASE_URL}/doctors`, {
       method: "POST",
       headers: getHeaders(),
       body: JSON.stringify(data),
     });
-
-    return handleResponse(res);
   },
 
   // ============================
-  // UPDATE
+  // UPDATE DOCTOR
   // ============================
   updateDoctor: async (id, data) => {
-    const res = await fetch(`${BASE_URL}/doctors/${id}`, {
+    return safeFetch(`${BASE_URL}/doctors/${id}`, {
       method: "PUT",
       headers: getHeaders(),
       body: JSON.stringify(data),
     });
-
-    return handleResponse(res);
   },
 
   // ============================
-  // DELETE
+  // DELETE DOCTOR
   // ============================
   deleteDoctor: async (id) => {
-    const res = await fetch(`${BASE_URL}/doctors/${id}`, {
+    return safeFetch(`${BASE_URL}/doctors/${id}`, {
       method: "DELETE",
       headers: getHeaders(false),
     });
-
-    return handleResponse(res);
   },
 
   // ============================
-  // RECENT ACTIVITY
+  // ACTIVITY
   // ============================
   getActivity: async () => {
-    const res = await fetch(`${BASE_URL}/doctors/activity`, {
+    const result = await safeFetch(`${BASE_URL}/doctors/activity`, {
       headers: getHeaders(false),
     });
 
-    const result = await handleResponse(res);
+    return result.data ?? [];
+  },
 
-    return Array.isArray(result)
-      ? result
-      : result?.data ?? [];
+  // ============================
+  // LOGOUT (CLEAN)
+  // ============================
+  logout: () => {
+    clearAuth();
+    window.location.href = "/login";
   },
 };

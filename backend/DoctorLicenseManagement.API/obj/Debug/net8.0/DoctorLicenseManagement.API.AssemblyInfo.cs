@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DoctorLicenseManagement.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+745f78620eaaec107a32a4c3cc51195ac8a79a7e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+645fa208635bdcb56a4e06d1bc4dbb5216690062")]
 [assembly: System.Reflection.AssemblyProductAttribute("DoctorLicenseManagement.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DoctorLicenseManagement.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

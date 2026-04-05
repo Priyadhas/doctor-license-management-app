@@ -10,7 +10,8 @@
         "dependencies": {
           "Dapper": "2.1.72",
           "DoctorLicenseManagement.Domain": "1.0.0",
-          "Microsoft.Data.SqlClient": "7.0.0"
+          "Microsoft.Data.SqlClient": "7.0.0",
+          "Microsoft.Extensions.Configuration.Abstractions": "10.0.5"
         },
         "runtime": {
           "DoctorLicenseManagement.Application.dll": {}
@@ -147,7 +148,7 @@
       },
       "Microsoft.Extensions.Caching.Abstractions/8.0.0": {
         "dependencies": {
-          "Microsoft.Extensions.Primitives": "8.0.0"
+          "Microsoft.Extensions.Primitives": "10.0.5"
         },
         "runtime": {
           "lib/net8.0/Microsoft.Extensions.Caching.Abstractions.dll": {
@@ -162,12 +163,23 @@
           "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2",
           "Microsoft.Extensions.Logging.Abstractions": "8.0.2",
           "Microsoft.Extensions.Options": "8.0.2",
-          "Microsoft.Extensions.Primitives": "8.0.0"
+          "Microsoft.Extensions.Primitives": "10.0.5"
         },
         "runtime": {
           "lib/net8.0/Microsoft.Extensions.Caching.Memory.dll": {
             "assemblyVersion": "8.0.0.0",
             "fileVersion": "8.0.1024.46610"
+          }
+        }
+      },
+      "Microsoft.Extensions.Configuration.Abstractions/10.0.5": {
+        "dependencies": {
+          "Microsoft.Extensions.Primitives": "10.0.5"
+        },
+        "runtime": {
+          "lib/net8.0/Microsoft.Extensions.Configuration.Abstractions.dll": {
+            "assemblyVersion": "10.0.0.0",
+            "fileVersion": "10.0.526.15411"
           }
         }
       },
@@ -193,7 +205,7 @@
       "Microsoft.Extensions.Options/8.0.2": {
         "dependencies": {
           "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2",
-          "Microsoft.Extensions.Primitives": "8.0.0"
+          "Microsoft.Extensions.Primitives": "10.0.5"
         },
         "runtime": {
           "lib/net8.0/Microsoft.Extensions.Options.dll": {
@@ -202,11 +214,11 @@
           }
         }
       },
-      "Microsoft.Extensions.Primitives/8.0.0": {
+      "Microsoft.Extensions.Primitives/10.0.5": {
         "runtime": {
           "lib/net8.0/Microsoft.Extensions.Primitives.dll": {
-            "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.23.53103"
+            "assemblyVersion": "10.0.0.0",
+            "fileVersion": "10.0.526.15411"
           }
         }
       },
@@ -425,6 +437,13 @@
       "path": "microsoft.extensions.caching.memory/8.0.1",
       "hashPath": "microsoft.extensions.caching.memory.8.0.1.nupkg.sha512"
     },
+    "Microsoft.Extensions.Configuration.Abstractions/10.0.5": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-P09QpTHjqHmCLQOTC+WyLkoRNxek4NIvfWt+TnU0etoDUSRxcltyd6+j/ouRbMdLR0j44GqGO+lhI2M4fAHG4g==",
+      "path": "microsoft.extensions.configuration.abstractions/10.0.5",
+      "hashPath": "microsoft.extensions.configuration.abstractions.10.0.5.nupkg.sha512"
+    },
     "Microsoft.Extensions.DependencyInjection.Abstractions/8.0.2": {
       "type": "package",
       "serviceable": true,
@@ -446,12 +465,12 @@
       "path": "microsoft.extensions.options/8.0.2",
       "hashPath": "microsoft.extensions.options.8.0.2.nupkg.sha512"
     },
-    "Microsoft.Extensions.Primitives/8.0.0": {
+    "Microsoft.Extensions.Primitives/10.0.5": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-bXJEZrW9ny8vjMF1JV253WeLhpEVzFo1lyaZu1vQ4ZxWUlVvknZ/+ftFgVheLubb4eZPSwwxBeqS1JkCOjxd8g==",
-      "path": "microsoft.extensions.primitives/8.0.0",
-      "hashPath": "microsoft.extensions.primitives.8.0.0.nupkg.sha512"
+      "sha512": "sha512-/HUHJ0tw/LQvD0DZrz50eQy/3z7PfX7WWEaXnjKTV9/TNdcgFlNTZGo49QhS7PTmhDqMyHRMqAXSBxLh0vso4g==",
+      "path": "microsoft.extensions.primitives/10.0.5",
+      "hashPath": "microsoft.extensions.primitives.10.0.5.nupkg.sha512"
     },
     "Microsoft.IdentityModel.Abstractions/8.16.0": {
       "type": "package",

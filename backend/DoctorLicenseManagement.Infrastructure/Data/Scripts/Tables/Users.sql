@@ -1,7 +1,22 @@
-        CREATE TABLE Users (
-        Id INT IDENTITY(1,1) PRIMARY KEY,
-        Email NVARCHAR(100) NOT NULL UNIQUE,
-        Password NVARCHAR(255) NOT NULL,
-        Role NVARCHAR(50) NOT NULL DEFAULT 'User',
-        CreatedDate DATETIME NOT NULL DEFAULT GETDATE()
-    );
+CREATE TABLE Users (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+
+    Email NVARCHAR(100) NOT NULL UNIQUE,
+
+    Password NVARCHAR(255) NOT NULL,
+
+    Role NVARCHAR(50) NOT NULL DEFAULT 'User',
+
+    -- PASSWORD RESET
+    ResetToken NVARCHAR(500) NULL,
+    ResetTokenExpiry DATETIME NULL,
+
+    -- SECURITY (PREMIUM SaaS)
+    IsActive BIT NOT NULL DEFAULT 1,
+    FailedLoginAttempts INT NOT NULL DEFAULT 0,
+    LastLoginDate DATETIME NULL,
+
+    -- AUDIT
+    CreatedDate DATETIME NOT NULL DEFAULT GETDATE(),
+    UpdatedDate DATETIME NULL
+);

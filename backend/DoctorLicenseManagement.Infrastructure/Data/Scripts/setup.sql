@@ -36,23 +36,46 @@ END
 GO
 
 -- =============================================
--- CREATE USERS TABLE (JWT AUTH)
+-- CREATE USERS TABLE (JWT + RESET PASSWORD)
 -- =============================================
+
 IF OBJECT_ID('dbo.Users', 'U') IS NULL
 BEGIN
     PRINT 'Creating Users Table...';
 
     CREATE TABLE Users (
         Id INT IDENTITY(1,1) PRIMARY KEY,
+
         Email NVARCHAR(100) NOT NULL UNIQUE,
-        Password NVARCHAR(100) NOT NULL,
+        Password NVARCHAR(255) NOT NULL,
         Role NVARCHAR(50) NOT NULL DEFAULT 'User',
-        CreatedDate DATETIME NOT NULL DEFAULT GETDATE()
+
+        CreatedDate DATETIME NOT NULL DEFAULT GETDATE(),
+
+        -- NEW FIELDS FOR PASSWORD RESET
+        ResetToken NVARCHAR(500) NULL,
+        ResetTokenExpiry DATETIME NULL
     );
 END
 ELSE
 BEGIN
     PRINT 'Users Table already exists';
+
+    IF COL_LENGTH('Users', 'ResetToken') IS NULL
+    BEGIN
+        ALTER TABLE Users
+        ADD ResetToken NVARCHAR(500) NULL;
+
+        PRINT 'Added ResetToken column';
+    END
+
+    IF COL_LENGTH('Users', 'ResetTokenExpiry') IS NULL
+    BEGIN
+        ALTER TABLE Users
+        ADD ResetTokenExpiry DATETIME NULL;
+
+        PRINT 'Added ResetTokenExpiry column';
+    END
 END
 GO
 
@@ -306,15 +329,38 @@ END
 GO
 
 -- =============================================
--- SEED USERS
+-- SEED USERS (UPDATED - SAFE & LATEST)
 -- =============================================
-IF NOT EXISTS (SELECT 1 FROM Users WHERE Email = 'admin@test.com')
+
+IF NOT EXISTS (SELECT 1 FROM Users WHERE Email = 'priyamariadhas@gmail.com')
 BEGIN
     PRINT 'Inserting default admin user...';
 
-    INSERT INTO Users (Email, Password, Role)
-    VALUES ('admin@test.com', 'Admin@963', 'Admin');
+    INSERT INTO Users (
+        Email,
+        Password,
+        Role,
+        CreatedDate,
+        ResetToken,
+        ResetTokenExpiry
+    )
+    VALUES (
+        'priyamariadhas@gmail.com',
+
+        -- ⚠️ TEMP PASSWORD (PLAIN for now)
+        -- Later replace with HASH from backend
+        'Admin@963',
+
+        'Admin',
+        GETDATE(),
+        NULL,
+        NULL
+    );
+END
+ELSE
+BEGIN
+    PRINT 'Admin user already exists';
 END
 GO
 
-PRINT ' DATABASE SETUP COMPLETED SUCCESSFULLY!';
+PRINT 'DATABASE SETUP COMPLETED SUCCESSFULLY!';

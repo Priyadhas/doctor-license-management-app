@@ -17,7 +17,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddScoped<DatabaseInitializer>();
 
+// =============================================
 // CORS
+// =============================================
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
@@ -37,8 +39,8 @@ builder.Services.AddCors(options =>
 builder.Services.AddScoped<IDoctorService, DoctorService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
-// REMOVE THIS (duplicate)
-// builder.Services.AddScoped<DoctorService>();
+// ✅🔥 FIX: ADD EMAIL SERVICE (THIS WAS MISSING)
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 // INFRASTRUCTURE
 builder.Services.AddScoped<IDbConnectionFactory, DbConnectionFactory>();
@@ -60,7 +62,7 @@ if (string.IsNullOrWhiteSpace(jwtKey))
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.RequireHttpsMetadata = false; // change to true in production
+        options.RequireHttpsMetadata = false;
         options.SaveToken = true;
 
         options.TokenValidationParameters = new TokenValidationParameters
@@ -125,12 +127,12 @@ using (var scope = app.Services.CreateScope())
 // GLOBAL ERROR HANDLER
 app.UseMiddleware<ExceptionMiddleware>();
 
+// CORS
+app.UseCors("AllowFrontend");
+
 // AUTH FLOW
 app.UseAuthentication();
 app.UseAuthorization();
-
-// CORS
-app.UseCors("AllowFrontend");
 
 // ROUTES
 app.MapControllers();

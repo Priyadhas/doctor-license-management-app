@@ -412,7 +412,8 @@
         "dependencies": {
           "Dapper": "2.1.72",
           "DoctorLicenseManagement.Domain": "1.0.0",
-          "Microsoft.Data.SqlClient": "7.0.0"
+          "Microsoft.Data.SqlClient": "7.0.0",
+          "Microsoft.Extensions.Configuration.Abstractions": "10.0.5"
         },
         "runtime": {
           "DoctorLicenseManagement.Application.dll": {
@@ -431,6 +432,7 @@
       },
       "DoctorLicenseManagement.Infrastructure/1.0.0": {
         "dependencies": {
+          "Dapper": "2.1.72",
           "DoctorLicenseManagement.Application": "1.0.0",
           "Microsoft.Data.SqlClient": "7.0.0",
           "Microsoft.Extensions.Configuration": "10.0.5",

@@ -1,6 +1,12 @@
-namespace DoctorLicenseManagement.Application.Interfaces;
+using DoctorLicenseManagement.Application.DTOs;
 
 public interface IAuthService
 {
-    Task<string> LoginAsync(string email, string password);
+    Task<object> LoginAsync(LoginDto dto);
+
+    Task ForgotPasswordAsync(string email);
+
+    Task ResetPasswordAsync(ResetPasswordDto dto);
+
+    Task RegisterAsync(RegisterDto dto);
 }

@@ -15,7 +15,7 @@ export default function DashboardPage() {
   } = useQuery({
     queryKey: ["summary"],
     queryFn: api.getSummary,
-    staleTime: 1000 * 60 * 5, // cache 5 mins
+    staleTime: 1000 * 60 * 5,
   });
 
   return (
@@ -31,7 +31,7 @@ export default function DashboardPage() {
 
         <div className="max-w-7xl mx-auto space-y-6">
 
-          {/* 🔥 LOADING UI */}
+          {/*  LOADING UI */}
           {isLoading && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-pulse">
               {[1, 2, 3].map((i) => (
@@ -43,7 +43,7 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* ❌ ERROR UI */}
+          {/*  ERROR UI */}
           {isError && (
             <div className="text-center text-red-500 py-10 font-medium">
               Failed to load dashboard data
@@ -53,7 +53,7 @@ export default function DashboardPage() {
           {/* ✅ DATA UI */}
           {!isLoading && data && (
             <>
-              {/* 🔥 STATS */}
+              {/* STATS */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
                 <StatsCard
@@ -76,7 +76,7 @@ export default function DashboardPage() {
 
               </div>
 
-              {/* 🔥 ACTIVITY */}
+              {/* ACTIVITY */}
               <ActivityList />
             </>
           )}
