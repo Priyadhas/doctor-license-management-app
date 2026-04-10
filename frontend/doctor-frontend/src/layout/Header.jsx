@@ -11,7 +11,24 @@ export default function Header({ title = "Doctor Management" }) {
   const dropdownRef = useRef(null);
   const router = useRouter();
 
-  // close dropdown on outside click
+  const [user, setUser] = useState(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+  try {
+    const storedUser = localStorage.getItem("user");
+
+    setUser(storedUser ? JSON.parse(storedUser) : null);
+  } catch {
+    console.error("Invalid user data");
+  } finally {
+    setMounted(true);
+  }
+}, []);
+
+  // ============================
+  // CLOSE DROPDOWN ON OUTSIDE CLICK
+  // ============================
   useEffect(() => {
     const handleClick = (e) => {
       if (!dropdownRef.current?.contains(e.target)) {
@@ -23,23 +40,23 @@ export default function Header({ title = "Doctor Management" }) {
   }, []);
 
   // ============================
-  //  LOGOUT WITHOUT POPUP
+  // LOGOUT
   // ============================
   const handleLogout = () => {
-    // clear tokens
     localStorage.removeItem("token");
     sessionStorage.removeItem("token");
+    localStorage.removeItem("user");
 
-    //  TOAST MESSAGE
     toast.success("Logged out successfully", {
       duration: 2000,
     });
 
-    // redirect after short delay
     setTimeout(() => {
       router.push("/login");
     }, 1200);
   };
+
+  if (!mounted) return null;
 
   return (
     <div className="sticky top-0 z-20 flex justify-center mb-6">
@@ -55,6 +72,7 @@ export default function Header({ title = "Doctor Management" }) {
 
         {/* RIGHT */}
         <div className="flex items-center gap-5">
+          
           {/* NOTIFICATION */}
           <button className="relative group p-2 rounded-xl hover:bg-white/60 transition">
             <div className="absolute inset-0 rounded-xl bg-blue-400 blur-xl opacity-0 group-hover:opacity-20 transition" />
@@ -78,8 +96,12 @@ export default function Header({ title = "Doctor Management" }) {
               />
 
               <div className="hidden md:block">
-                <p className="text-sm font-medium text-gray-800">Admin</p>
-                <p className="text-[11px] text-gray-500">admin@test.com</p>
+                <p className="text-sm font-medium text-gray-800">
+                  {user?.role || "User"}
+                </p>
+                <p className="text-[11px] text-gray-500">
+                  {user?.email || "No Email"}
+                </p>
               </div>
 
               <ChevronDown

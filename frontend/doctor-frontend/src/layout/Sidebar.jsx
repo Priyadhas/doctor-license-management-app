@@ -3,10 +3,27 @@
 import { useRouter, usePathname } from "next/navigation";
 import { LayoutDashboard, Stethoscope } from "lucide-react";
 import Image from "next/image";
+import { useState, useEffect } from "react";
 
 export default function Sidebar() {
   const router = useRouter();
   const pathname = usePathname();
+
+  const [user, setUser] = useState(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    try {
+      const storedUser = localStorage.getItem("user");
+      setUser(storedUser ? JSON.parse(storedUser) : null);
+    } catch {
+      console.error("Invalid user data in storage");
+    } finally {
+      setMounted(true);
+    }
+  }, []);
+
+  if (!mounted) return null;
 
   const menu = [
     {
@@ -25,25 +42,22 @@ export default function Sidebar() {
     <div className="w-64 h-screen fixed left-0 top-0 flex flex-col justify-between px-5 py-6
     bg-gradient-to-b from-blue-700 via-blue-600 to-blue-500 text-white shadow-2xl">
 
-      {/* 🔷 TOP */}
+      {/* TOP */}
       <div>
 
         {/* BRAND */}
         <div className="flex items-center gap-3 mb-12">
           <div className="relative w-11 h-11 rounded-xl bg-white flex items-center justify-center shadow-lg">
-
-            {/* Glow */}
             <div className="absolute inset-0 rounded-xl bg-blue-400 blur-xl opacity-20" />
-
             <Stethoscope className="text-blue-600 relative z-10" size={20} />
           </div>
 
           <div className="leading-tight">
             <h2 className="text-lg font-semibold tracking-wide">
-              MedCare
+              DocCare
             </h2>
             <p className="text-[10px] text-white/70">
-              Healthcare Admin
+              Doctor License Management
             </p>
           </div>
         </div>
@@ -65,12 +79,10 @@ export default function Sidebar() {
                 }`}
               >
 
-                {/* ACTIVE LEFT BAR */}
                 {isActive && (
                   <div className="absolute left-0 top-2 bottom-2 w-1 bg-white rounded-r" />
                 )}
 
-                {/* ICON */}
                 <div
                   className={`transition-all ${
                     isActive
@@ -81,7 +93,6 @@ export default function Sidebar() {
                   {item.icon}
                 </div>
 
-                {/* TEXT */}
                 <span
                   className={`text-sm font-medium transition-all ${
                     isActive
@@ -92,7 +103,6 @@ export default function Sidebar() {
                   {item.name}
                 </span>
 
-                {/* HOVER GLOW */}
                 <div className="absolute inset-0 rounded-xl bg-white/10 opacity-0 group-hover:opacity-100 transition pointer-events-none" />
               </div>
             );
@@ -100,36 +110,33 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/*  PROFILE */}
+      {/* PROFILE */}
       <div className="pt-5 border-t border-white/20">
-
         <div className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/10 transition cursor-pointer">
 
           {/* AVATAR */}
           <div className="relative">
             <Image
               src="/images/doctor.png"
-              alt="Admin"
+              alt="User"
               width={36}
               height={36}
               className="rounded-full object-cover border border-white/30 shadow-md"
             />
 
-            {/* ONLINE INDICATOR */}
             <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-400 border-2 border-blue-600 rounded-full" />
           </div>
 
           {/* USER INFO */}
           <div className="leading-tight">
             <p className="text-sm font-medium text-white">
-              Admin
+              {user?.role || "User"}
             </p>
             <p className="text-[11px] text-white/70">
-              admin@test.com
+              {user?.email || "No Email"}
             </p>
           </div>
         </div>
-
       </div>
     </div>
   );

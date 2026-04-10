@@ -346,10 +346,7 @@ BEGIN
     )
     VALUES (
         'priyamariadhas@gmail.com',
-
-        -- ⚠️ TEMP PASSWORD (PLAIN for now)
-        -- Later replace with HASH from backend
-        'Admin@963',
+        'q7Lw3J5y9wqZg7XzqVYzBQ==.qF6u0d9T6cU2u7o6yCq2kZ8cYVbY9Zz3jX6k3Jg7Q2E=',
 
         'Admin',
         GETDATE(),

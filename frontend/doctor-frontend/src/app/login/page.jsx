@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/src/services/api";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
@@ -29,7 +29,29 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
+  // ============================
+  // AUTO REDIRECT IF LOGGED IN
+  // ============================
+  useEffect(() => {
+    const token =
+      localStorage.getItem("token") ||
+      sessionStorage.getItem("token");
+
+    if (token) {
+      router.replace("/dashboard");
+    } else {
+      setCheckingAuth(false);
+    }
+  }, []);
+
+  // prevent UI flicker
+  if (checkingAuth) return null;
+
+  // ============================
   // HANDLE INPUT
+  // ============================
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -53,7 +75,9 @@ export default function LoginPage() {
     }
   };
 
+  // ============================
   // LOGIN
+  // ============================
   const handleLogin = async (e) => {
     e.preventDefault();
 
@@ -84,16 +108,25 @@ export default function LoginPage() {
       const res = await api.login(form);
 
       const token = res.token || res.data?.token;
+      const user = res.user || res.data?.user;
+
+      // SAVE USER
+      localStorage.setItem("user",JSON.stringify(user));
 
       if (!token) throw new Error("Token not received");
 
+      // clear old tokens
+      localStorage.removeItem("token");
+      sessionStorage.removeItem("token");
+
+      // store token
       if (rememberMe) {
         localStorage.setItem("token", token);
       } else {
         sessionStorage.setItem("token", token);
       }
 
-      router.push("/dashboard");
+      router.replace("/dashboard");
     } catch (err) {
       setServerError(
         err.message.toLowerCase().includes("invalid")
@@ -107,8 +140,7 @@ export default function LoginPage() {
 
   return (
     <div className="relative min-h-screen flex overflow-hidden">
-
-      {/* BACKGROUND IMAGE (NO BLUR) */}
+      {/* BACKGROUND */}
       <Image
         src="/images/Doctors in a modern hospital setting.jpeg"
         alt="Background"
@@ -117,22 +149,16 @@ export default function LoginPage() {
         priority
       />
 
-      {/* LIGHT OVERLAY (NO BLUR) */}
+      {/* OVERLAY */}
       <div className="absolute inset-0 bg-black/20" />
 
-      {/* LOGIN CARD (SHIFTED RIGHT PERFECTLY) */}
+      {/* LOGIN CARD */}
       <div className="relative z-10 w-full flex items-center justify-end pr-[12%]">
-        
         <div className="w-full max-w-md px-6">
           <form
             onSubmit={handleLogin}
             noValidate
-            className="
-              bg-white/80 backdrop-blur-2xl
-              border border-white/40
-              rounded-3xl shadow-2xl
-              p-8 space-y-6
-            "
+            className="bg-white/80 backdrop-blur-2xl border border-white/40 rounded-3xl shadow-2xl p-8 space-y-6"
           >
             {/* HEADER */}
             <div className="text-center space-y-1">
@@ -198,7 +224,7 @@ export default function LoginPage() {
               )}
             </div>
 
-            {/* REMEMBER ME */}
+            {/* REMEMBER */}
             <div className="flex items-center justify-between text-sm">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -212,7 +238,9 @@ export default function LoginPage() {
 
               <button
                 type="button"
-                onClick={() => router.push("/forget-password")}
+                onClick={() =>
+                  router.push(`/forget-password?email=${form.email}`)
+                }
                 className="text-gray-500 hover:text-blue-600 hover:underline"
               >
                 Forgot password?
@@ -223,12 +251,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="
-                w-full bg-gradient-to-r from-blue-600 to-blue-400
-                text-white py-3 rounded-xl font-semibold shadow-lg
-                hover:scale-[1.02] active:scale-[0.98]
-                transition disabled:opacity-60
-              "
+              className="w-full bg-gradient-to-r from-blue-600 to-blue-400 text-white py-3 rounded-xl font-semibold shadow-lg hover:scale-[1.02] transition disabled:opacity-60"
             >
               {loading ? "Logging in..." : "Login"}
             </button>

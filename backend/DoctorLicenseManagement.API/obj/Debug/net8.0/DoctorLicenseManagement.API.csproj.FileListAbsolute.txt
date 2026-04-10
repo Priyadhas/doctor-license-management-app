@@ -166,3 +166,5 @@ D:\Doctor License Management\backend\DoctorLicenseManagement.API\obj\Debug\net8.
 D:\Doctor License Management\backend\DoctorLicenseManagement.API\obj\Debug\net8.0\DoctorLicenseManagement.API.pdb
 D:\Doctor License Management\backend\DoctorLicenseManagement.API\obj\Debug\net8.0\DoctorLicenseManagement.API.genruntimeconfig.cache
 D:\Doctor License Management\backend\DoctorLicenseManagement.API\obj\Debug\net8.0\ref\DoctorLicenseManagement.API.dll
+D:\Doctor License Management\backend\DoctorLicenseManagement.API\bin\Debug\net8.0\Microsoft.AspNetCore.Cryptography.Internal.dll
+D:\Doctor License Management\backend\DoctorLicenseManagement.API\bin\Debug\net8.0\Microsoft.AspNetCore.Cryptography.KeyDerivation.dll

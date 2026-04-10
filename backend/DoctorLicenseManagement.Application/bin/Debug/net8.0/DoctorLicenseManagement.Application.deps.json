@@ -10,6 +10,7 @@
         "dependencies": {
           "Dapper": "2.1.72",
           "DoctorLicenseManagement.Domain": "1.0.0",
+          "Microsoft.AspNetCore.Cryptography.KeyDerivation": "10.0.5",
           "Microsoft.Data.SqlClient": "7.0.0",
           "Microsoft.Extensions.Configuration.Abstractions": "10.0.5"
         },
@@ -22,6 +23,28 @@
           "lib/net8.0/Dapper.dll": {
             "assemblyVersion": "2.0.0.0",
             "fileVersion": "2.1.72.10375"
+          }
+        }
+      },
+      "Microsoft.AspNetCore.Cryptography.Internal/10.0.5": {
+        "dependencies": {
+          "System.Memory": "4.6.3"
+        },
+        "runtime": {
+          "lib/netstandard2.0/Microsoft.AspNetCore.Cryptography.Internal.dll": {
+            "assemblyVersion": "10.0.0.0",
+            "fileVersion": "10.0.526.15411"
+          }
+        }
+      },
+      "Microsoft.AspNetCore.Cryptography.KeyDerivation/10.0.5": {
+        "dependencies": {
+          "Microsoft.AspNetCore.Cryptography.Internal": "10.0.5"
+        },
+        "runtime": {
+          "lib/netstandard2.0/Microsoft.AspNetCore.Cryptography.KeyDerivation.dll": {
+            "assemblyVersion": "10.0.0.0",
+            "fileVersion": "10.0.526.15411"
           }
         }
       },
@@ -341,6 +364,7 @@
           }
         }
       },
+      "System.Memory/4.6.3": {},
       "System.Security.Cryptography.Pkcs/8.0.1": {
         "runtime": {
           "lib/net8.0/System.Security.Cryptography.Pkcs.dll": {
@@ -387,6 +411,20 @@
       "sha512": "sha512-ns4mGqQd9a/MhP8m6w556vVlZIa0/MfUu03zrxjZC/jlr1uVCsUac8bkdB+Fs98Llbd56rRSo1eZH5VVmeGZyw==",
       "path": "dapper/2.1.72",
       "hashPath": "dapper.2.1.72.nupkg.sha512"
+    },
+    "Microsoft.AspNetCore.Cryptography.Internal/10.0.5": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-kFUpNRYySfqNLuQKGMKZ2mK8b86R1zizlc9QB6R/Ess0rSkrA8pRNCMSFm+DqUnNfm5G3FWjsYIJOKYyhkHeig==",
+      "path": "microsoft.aspnetcore.cryptography.internal/10.0.5",
+      "hashPath": "microsoft.aspnetcore.cryptography.internal.10.0.5.nupkg.sha512"
+    },
+    "Microsoft.AspNetCore.Cryptography.KeyDerivation/10.0.5": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-NkWUZYkL6wavYY2wMZgnODzsyTOZhcRxP/DJvZlBbWEJViukdyuIqtdTzltODyjsc3MjEvxmbPDDk2KgGv6tMA==",
+      "path": "microsoft.aspnetcore.cryptography.keyderivation/10.0.5",
+      "hashPath": "microsoft.aspnetcore.cryptography.keyderivation.10.0.5.nupkg.sha512"
     },
     "Microsoft.Bcl.Cryptography/8.0.0": {
       "type": "package",
@@ -541,6 +579,13 @@
       "sha512": "sha512-rrs2u7DRMXQG2yh0oVyF/vLwosfRv20Ld2iEpYcKwQWXHjfV+gFXNQsQ9p008kR9Ou4pxBs68Q6/9zC8Gi1wjg==",
       "path": "system.identitymodel.tokens.jwt/8.16.0",
       "hashPath": "system.identitymodel.tokens.jwt.8.16.0.nupkg.sha512"
+    },
+    "System.Memory/4.6.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-qdcDOgnFZY40+Q9876JUHnlHu7bosOHX8XISRoH94fwk6hgaeQGSgfZd8srWRZNt5bV9ZW2TljcegDNxsf+96A==",
+      "path": "system.memory/4.6.3",
+      "hashPath": "system.memory.4.6.3.nupkg.sha512"
     },
     "System.Security.Cryptography.Pkcs/8.0.1": {
       "type": "package",

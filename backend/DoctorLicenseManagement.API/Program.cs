@@ -39,7 +39,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddScoped<IDoctorService, DoctorService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
-// ✅🔥 FIX: ADD EMAIL SERVICE (THIS WAS MISSING)
+// FIX: ADD EMAIL SERVICE (THIS WAS MISSING)
 builder.Services.AddScoped<IEmailService, EmailService>();
 
 // INFRASTRUCTURE

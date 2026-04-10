@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Sidebar from "@/src/layout/Sidebar";
 import Header from "@/src/layout/Header";
 import StatsCard from "../dashboard/StatCard";
@@ -8,6 +10,21 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "@/src/services/api";
 
 export default function DashboardPage() {
+  const router = useRouter();
+
+  // ============================
+  // AUTH CHECK (IMPORTANT)
+  // ============================
+  useEffect(() => {
+    const token =
+      localStorage.getItem("token") ||
+      sessionStorage.getItem("token");
+
+    if (!token) {
+      router.replace("/login");
+    }
+  }, []);
+
   const {
     data,
     isLoading,
@@ -25,11 +42,11 @@ export default function DashboardPage() {
       <Sidebar />
 
       {/* MAIN */}
-      <div className="flex-1 ml-64 px-8 py-6 overflow-y-auto">
+      <div className="flex-1 ml-64 px-8 py-6 overflow-hidden">
 
         <Header title="Dashboard" />
 
-        <div className="max-w-7xl mx-auto space-y-6">
+        <div className="max-w-7xl mx-auto space-y-6  overflow-hidden">
 
           {/*  LOADING UI */}
           {isLoading && (
@@ -50,7 +67,7 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* ✅ DATA UI */}
+          {/* DATA UI */}
           {!isLoading && data && (
             <>
               {/* STATS */}
@@ -77,7 +94,17 @@ export default function DashboardPage() {
               </div>
 
               {/* ACTIVITY */}
-              <ActivityList />
+              <div className="bg-white/70 backdrop-blur-2xl border border-white/40 rounded-3xl shadow-2xl overflow-hidden">
+                
+                <div className="px-6 py-4 border-b text-sm font-semibold text-gray-700">
+                  Recent Activity
+                </div>
+
+                <div className="h-[300px] overflow-y-auto px-6 py-4">
+                  <ActivityList />
+                </div>
+
+              </div>
             </>
           )}
         </div>

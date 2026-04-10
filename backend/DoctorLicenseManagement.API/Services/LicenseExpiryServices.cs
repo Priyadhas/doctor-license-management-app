@@ -40,7 +40,7 @@ public class LicenseExpiryService : BackgroundService
                 _logger.LogError(ex, "Error running expiry job");
             }
 
-            await Task.Delay(TimeSpan.FromHours(24), stoppingToken);
+            await Task.Delay(TimeSpan.FromMinutes(2), stoppingToken);
         }
     }
 }

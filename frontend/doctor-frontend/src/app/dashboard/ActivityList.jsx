@@ -29,8 +29,6 @@ export default function ActivityList() {
         transition-all duration-300
       "
     >
-      <h2 className="text-lg font-semibold mb-4">Recent Activity</h2>
-
       {/* LOADING */}
       {isLoading && (
         <p className="text-sm text-gray-400">Loading activity...</p>

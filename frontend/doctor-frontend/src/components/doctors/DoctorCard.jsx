@@ -38,17 +38,9 @@ export default function DoctorCard({ doctor, onDelete }) {
   return (
     <>
       {/* CARD */}
-      <div
-        className="
-  group grid grid-cols-4 items-center gap-4 px-6 py-4 rounded-2xl
+      <div className="grid grid-cols-5 gap-4 items-center  bg-white/70 backdrop-blur-xl border border-white/40 rounded-2xl px-4 py-4 shadow-md hover:shadow-2xl                            
 
-  bg-white/70 backdrop-blur-xl border border-white/40    
-
-  shadow-md hover:shadow-2xl                            
-
-  transition-all duration-300 hover:scale-[1.01]         
-"
-      >
+  transition-all duration-300 hover:scale-[1.01]">
         {/*AVATAR + NAME */}
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-11 h-11 flex items-center justify-center rounded-xl bg-blue-100 text-blue-600 shadow-sm">
@@ -68,6 +60,11 @@ export default function DoctorCard({ doctor, onDelete }) {
         {/*SPECIALIZATION */}
         <div className="text-sm text-gray-500 truncate font-medium">
           {doctor.specialization}
+        </div>
+        
+        {/* LICENSE NUMBER */}
+        <div className="text-sm text-gray-500 truncate font-medium">
+          {doctor.licenseNumber || "N/A"}
         </div>
 
         {/* STATUS */}

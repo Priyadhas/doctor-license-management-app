@@ -5,6 +5,7 @@ import { api } from "@/src/services/api";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Lock, Eye, EyeOff } from "lucide-react";
 import Image from "next/image";
+import toast from "react-hot-toast";
 
 // ============================
 // PASSWORD STRENGTH FUNCTION
@@ -47,7 +48,6 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  //  PASSWORD STRENGTH
   const strength = getPasswordStrength(form.newPassword);
 
   // ============================
@@ -56,6 +56,7 @@ export default function ResetPasswordPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // INLINE VALIDATION ONLY
     if (!form.newPassword || !form.confirmPassword) {
       return setError("All fields are required");
     }
@@ -78,10 +79,16 @@ export default function ResetPasswordPage() {
         newPassword: form.newPassword,
       });
 
-      alert("Password reset successful");
-      router.push("/login");
+      // SUCCESS TOAST ONLY
+      toast.success("Password reset successful");
+
+      setTimeout(() => {
+        router.push("/login");
+      }, 1500);
+
     } catch (err) {
-      setError(err.message || "Reset failed");
+      // ERROR TOAST ONLY
+      toast.error(err.message || "Reset failed");
     } finally {
       setLoading(false);
     }
@@ -156,7 +163,7 @@ export default function ResetPasswordPage() {
                 </button>
               </div>
 
-              {/* 🔥 PASSWORD STRENGTH */}
+              {/* PASSWORD STRENGTH */}
               {form.newPassword && (
                 <div className="mt-2">
                   <div className="flex justify-between text-xs">
@@ -211,7 +218,7 @@ export default function ResetPasswordPage() {
                 </button>
               </div>
 
-              {/*  MATCH CHECK */}
+              {/* MATCH CHECK */}
               {form.confirmPassword && (
                 <p
                   className={`text-xs mt-1 ${

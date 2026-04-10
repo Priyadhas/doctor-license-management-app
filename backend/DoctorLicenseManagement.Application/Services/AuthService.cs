@@ -1,13 +1,14 @@
 using Dapper;
 using System.Data;
 using System.Security.Cryptography;
-using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Configuration;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using DoctorLicenseManagement.Application.DTOs;
 using DoctorLicenseManagement.Application.Interfaces;
+using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+using System.Text;
 
 public class AuthService : IAuthService
 {
@@ -28,34 +29,38 @@ public class AuthService : IAuthService
     // ============================
     // LOGIN
     // ============================
-public async Task<object> LoginAsync(LoginDto dto)
-{
-    using var connection = _factory.CreateConnection();
-
-    var user = await connection.QueryFirstOrDefaultAsync<dynamic>(
-        "SELECT * FROM Users WHERE Email = @Email",
-        new { dto.Email });
-
-    if (user == null)
-        throw new Exception("User not found");
-        
-  var isValid = dto.Password == (string)user.Password;
-
-    if (!isValid)
-        throw new Exception("Invalid credentials");
-
-    var token = GenerateJwt(user.Email, user.Role);
-
-    return new
+    public async Task<object> LoginAsync(LoginDto dto)
     {
-        token,
-        user = new
+        using var connection = _factory.CreateConnection();
+
+        var user = await connection.QueryFirstOrDefaultAsync<dynamic>(
+            "SELECT * FROM Users WHERE Email = @Email",
+            new { dto.Email });
+
+        // Admin Password
+        // Console.WriteLine(HashPassword("Admin@963"));
+
+        if (user == null)
+            throw new Exception("User not found");
+
+        var isValid = VerifyPassword(dto.Password, (string)user.Password);
+
+        if (!isValid)
+            throw new Exception("Invalid credentials");
+
+        var token = GenerateJwt(user.Email, user.Role);
+
+        return new
         {
-            email = user.Email,
-            role = user.Role
-        }
-    };
-}
+            token,
+            user = new
+            {
+                email = user.Email,
+                role = user.Role
+            }
+        };
+    }
+
     // ============================
     // REGISTER
     // ============================
@@ -78,13 +83,15 @@ public async Task<object> LoginAsync(LoginDto dto)
 
         var role = adminExists == 0 ? "Admin" : "User";
 
+        var hashedPassword = HashPassword(dto.Password);
+
         await connection.ExecuteAsync(@"
             INSERT INTO Users (Email, Password, Role)
             VALUES (@Email, @Password, @Role)",
             new
             {
                 Email = dto.Email,
-                Password = dto.Password,
+                Password = hashedPassword,
                 Role = role
             });
     }
@@ -113,10 +120,67 @@ public async Task<object> LoginAsync(LoginDto dto)
 
         var link = $"http://localhost:3000/reset-password?token={token}&email={email}";
 
-        await _emailService.SendEmailAsync(
-            email,
-            "Reset Password",
-            $"Click here: <a href='{link}'>Reset Password</a>");
+       await _emailService.SendEmailAsync(
+    email,
+    "DocCare | Reset Your Password",
+    $@"
+    <div style='background-color:#f4f6f8;padding:40px 0;font-family:Arial,sans-serif;'>
+
+        <table align='center' width='100%' cellpadding='0' cellspacing='0' style='max-width:600px;background:#ffffff;border-radius:10px;padding:30px;'>
+
+            <tr>
+                <td align='center'>
+                    <h2 style='margin:0;color:#1e3a8a;font-weight:600;'>
+                        Welcome to DocCare
+                    </h2>
+                </td>
+            </tr>
+
+            <tr>
+                <td style='padding-top:20px;text-align:center;color:#374151;font-size:14px;line-height:1.6;'>
+                    We received a request to reset your password for your DocCare account.
+                </td>
+            </tr>
+
+            <tr>
+                <td style='padding-top:10px;text-align:center;color:#374151;font-size:14px;line-height:1.6;'>
+                    Manage your doctor licenses securely and efficiently through our platform.
+                </td>
+            </tr>
+
+            <tr>
+                <td align='center' style='padding:30px 0;'>
+                    <a href='{link}' 
+                       style='display:inline-block;background-color:#2563eb;color:#ffffff;
+                              padding:12px 28px;border-radius:6px;text-decoration:none;
+                              font-size:14px;font-weight:600;'>
+                        Reset Your Password
+                    </a>
+                </td>
+            </tr>
+
+            <tr>
+                <td style='text-align:center;color:#6b7280;font-size:13px;line-height:1.5;'>
+                    This link will expire in <strong>15 minutes</strong> for security reasons.
+                </td>
+            </tr>
+
+            <tr>
+                <td style='padding-top:10px;text-align:center;color:#6b7280;font-size:13px;line-height:1.5;'>
+                    If you did not request this, you can safely ignore this email.
+                </td>
+            </tr>
+
+            <tr>
+                <td style='padding-top:25px;text-align:center;font-size:12px;color:#9ca3af;'>
+                    © 2026 DocCare — Doctor License Management System
+                </td>
+            </tr>
+
+        </table>
+
+    </div>
+    ");
     }
 
     // ============================
@@ -136,13 +200,15 @@ public async Task<object> LoginAsync(LoginDto dto)
         if (user == null)
             throw new Exception("Invalid or expired token");
 
+        var hashedPassword = HashPassword(dto.NewPassword);
+
         await connection.ExecuteAsync(@"
             UPDATE Users
             SET Password = @Password,
                 ResetToken = NULL,
                 ResetTokenExpiry = NULL
             WHERE Email = @Email",
-            new { Password = dto.NewPassword , Email = dto.Email });
+            new { Password = hashedPassword, Email = dto.Email });
     }
 
     // ============================
@@ -165,6 +231,43 @@ public async Task<object> LoginAsync(LoginDto dto)
         var newAccessToken = GenerateJwt(user.Email, user.Role);
 
         return new { token = newAccessToken };
+    }
+
+    // ============================
+    // PASSWORD HASHING
+    // ============================
+    private string HashPassword(string password)
+    {
+        byte[] salt = RandomNumberGenerator.GetBytes(16);
+
+        string hash = Convert.ToBase64String(
+            KeyDerivation.Pbkdf2(
+                password,
+                salt,
+                KeyDerivationPrf.HMACSHA256,
+                10000,
+                32));
+
+        return $"{Convert.ToBase64String(salt)}.{hash}";
+    }
+
+    private bool VerifyPassword(string enteredPassword, string storedPassword)
+    {
+        var parts = storedPassword.Split('.');
+        if (parts.Length != 2) return false;
+
+        byte[] salt = Convert.FromBase64String(parts[0]);
+        string storedHash = parts[1];
+
+        string enteredHash = Convert.ToBase64String(
+            KeyDerivation.Pbkdf2(
+                enteredPassword,
+                salt,
+                KeyDerivationPrf.HMACSHA256,
+                10000,
+                32));
+
+        return enteredHash == storedHash;
     }
 
     // ============================
